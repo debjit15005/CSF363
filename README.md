@@ -4,6 +4,8 @@ Darshan Kumar
 Debjit Kar
 Nidhish Parekh
 
-## Lexer
+## Grammar
+Done
 
+## Lexer
 To be implemented
