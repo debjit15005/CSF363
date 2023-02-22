@@ -1,4 +1,4 @@
-#CSF363 Compiler Construction Course Project
+# CSF363 Compiler Construction Course Project
 
 Darshan Kumar
 Debjit Kar
