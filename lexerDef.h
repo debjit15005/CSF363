@@ -4,4 +4,12 @@
 
 typedef enum {
 
-} Token;
+} token;
+
+typedef struct {
+    token token;
+    int line;
+    int val;
+} tokenInfo;
+
+
