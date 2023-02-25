@@ -1,15 +1,25 @@
 /* Definitions of data structures for lexer*/
-
+#ifndef
 #define MAX_LEXEME 100
-
+#endif
 typedef enum {
-
+    TK_INTEGER, TK_REAL, TK_BOOLEAN, TK_OF, TK_ARRAY, TK_START, TK_END, TK_DECLARE,
+    TK_MODULE, TK_DRIVER, TK_PROGRAM, TK_GET_VALUE, TK_PRINT,
+    TK_USE, TK_WITH, TK_PARAMETERS, TK_TAKES, TK_INPUT,
+    TK_RETURNS, TK_FOR, TK_IN, TK_SWITCH, TK_CASE,
+    TK_BREAK, TK_DEFAULT, TK_WHILE, TK_ID, TK_NUM,
+    TK_RNUM, TK_AND, TK_OR, TK_TRUE, TK_FALSE,
+    TK_PLUS, TK_MINUS, TK_MUL, TK_DIV, TK_LT,
+    TK_LE, TK_GE, TK_GT, TK_EQ, TK_NE,
+    TK_DEF, TK_ENDDEF, TK_DRIVERDEF, TK_DRIVERENDDEF, TK_COLON,
+    TK_RANGEOP, TK_SEMICOL, TK_COMMA, TK_ASSIGNOP, TK_SQBO,
+    TK_SQBC, TK_BO, TK_BC, TK_COMMENTMARK
 } token;
 
 typedef struct {
     token token;
     int line;
-    int val;
+    int val; //WHY INT?
 } tokenInfo;
 
 

@@ -1,6 +1,6 @@
 # CSF363 Compiler Construction Course Project
 
-Darshan Kumar
+Darshan Abhaykumar
 Debjit Kar
 Nidhish Parekh
 
