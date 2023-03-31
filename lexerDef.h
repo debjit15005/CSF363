@@ -1,25 +1,91 @@
 /* Definitions of data structures for lexer*/
-#ifndef
+#ifndef LEXERDEF_H
+#define LEXERDEF_H
+ #define BUFFER_SIZE (1<<25)
 #define MAX_LEXEME 100
-#endif
-typedef enum {
-    TK_INTEGER, TK_REAL, TK_BOOLEAN, TK_OF, TK_ARRAY, TK_START, TK_END, TK_DECLARE,
-    TK_MODULE, TK_DRIVER, TK_PROGRAM, TK_GET_VALUE, TK_PRINT,
-    TK_USE, TK_WITH, TK_PARAMETERS, TK_TAKES, TK_INPUT,
-    TK_RETURNS, TK_FOR, TK_IN, TK_SWITCH, TK_CASE,
-    TK_BREAK, TK_DEFAULT, TK_WHILE, TK_ID, TK_NUM,
-    TK_RNUM, TK_AND, TK_OR, TK_TRUE, TK_FALSE,
-    TK_PLUS, TK_MINUS, TK_MUL, TK_DIV, TK_LT,
-    TK_LE, TK_GE, TK_GT, TK_EQ, TK_NE,
-    TK_DEF, TK_ENDDEF, TK_DRIVERDEF, TK_DRIVERENDDEF, TK_COLON,
-    TK_RANGEOP, TK_SEMICOL, TK_COMMA, TK_ASSIGNOP, TK_SQBO,
-    TK_SQBC, TK_BO, TK_BC, TK_COMMENTMARK
+#define TOKEN_COUNT 60
+typedef enum { 
+    INTEGER,
+     REAL,
+     BOOLEAN,
+     OF,
+     ARRAY,
+     START,
+     END,
+     DECLARE,
+    MODULE,
+     DRIVER,
+     PROGRAM,
+     GET_VALUE,
+     PRINT,
+    USE,
+     WITH,
+     PARAMETERS,
+     TAKES,
+     INPUT,
+    RETURNS,
+     FOR,
+     IN,
+     SWITCH,
+     CASE,
+    BREAK,
+     DEFAULT,
+     WHILE,
+     ID,
+     NUM,
+    RNUM,
+     AND,
+     OR,
+     TRUE,
+     FALSE,
+    PLUS,
+     MINUS,
+     MUL,
+     DIV,
+     LT,
+    LE,
+     GE,
+     GT,
+     EQ,
+     NE,
+    DEF,
+     ENDDEF,
+     DRIVERDEF,
+     DRIVERENDDEF,
+     COLON,
+    RANGEOP,
+     SEMICOL,
+     COMMA,
+     ASSIGNOP,
+     SQBO,
+    SQBC,
+     BO,
+     BC,
+     COMMENTMARK,
+     ENDOFFILE,
+     EPSILON
 } token;
 
 typedef struct {
     token token;
-    int line;
-    int val; //WHY INT?
+    int line_num;
+    union typeVal{
+        long long i_val;
+        float f_val;
+        char lexeme[MAX_LEXEME];
+    } tv;
 } tokenInfo;
 
+typedef struct{
+    char* one; 
+    char* two; 
+} buffer;
 
+typedef struct {
+    token sym;
+    int valid;
+    char lexeme[MAX_LEXEME];
+} HTableEntry;
+
+typedef HTableEntry* Htable;
+#endif
