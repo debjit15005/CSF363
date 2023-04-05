@@ -138,5 +138,13 @@ void addTermToSet(NODE node, NODE set){
         if(set->val.t_val == node->val.t_val) return;
         set->next=node;
     }
+}
 
+int findTermInSet(token term, NODE node){
+    
+    while(node->next != NULL){
+        if(node->val.t_val==term) return 1;
+        node = node->next;
+    }
+    return 0;
 }

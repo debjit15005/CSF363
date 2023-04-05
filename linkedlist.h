@@ -54,5 +54,6 @@ void addTermToRule(RULE rule, token t_val, NT nt_val, int tnt);
 
 void printRule(RULE rule);
 void addTermToSet(NODE node, NODE set);
+int findTermInSet(token term, NODE node);
 
 #endif

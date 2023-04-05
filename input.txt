@@ -4,9 +4,9 @@ start
 	
 end
 <<module empty>>
-takes input[a:boolean];
+takes input[:boolean];
 start
-
+end
 
 
 ** print the following message on the console

@@ -115,7 +115,8 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     push(mainStack, createNewTerm(placeholder, program, 1));
     printf("\nInitial Stack: \n");
     printStack(mainStack);
-    printf("****************\n\n");
+    printf("\n");
+    
     int tek = 0;
     
     tek++;
@@ -126,7 +127,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     }
     while(reachEnd(mainStack))
     {   
-        printf("%d ",readToken->token); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
+        printf("current token: "); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
         fflush(stdout);
 
         // printToken(readToken);
@@ -140,7 +141,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
         {
             // printf("Working\n");
             // fflush(stdout);            
-            printT(temp->val.t_val); printf("\n");
+            printf("pre pop top: ");printT(temp->val.t_val); printf("\n");
             if(temp->val.t_val != readToken->token)
             {
                 if(temp->val.t_val == EPSILON)
@@ -153,15 +154,15 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printf("\n\n");
                     continue;
                 }
-                if(readToken->token == ENDOFFILE)
-                {
-                    printf("ERROR: Input consumed but Stack not empty\n");
-                    break; // CHECK
-                } 
+                // if(readToken->token == ENDOFFILE)
+                // {
+                //     printf("ERROR: Input consumed but Stack not empty\n");
+                //     break; // CHECK
+                // } 
                 else
                 {
-                    printf("ERROR: Terminal Mismatch\n");
-                    break; // CHECK
+                    printf("ERROR: Terminal Mismatch\n\n");
+                    ; // CHECK
                 }  
                 readToken = runLexerForParser(testcaseFile,10);
                 // CHECK FOR NULL 
@@ -184,27 +185,44 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             }
         }
         else if(temp->tnt==1){
-            printNT(temp->val.nt_val);
-            printf("\n");
+            printf("pre pop top: ");printNT(temp->val.nt_val); printf("\n");
             fflush(stdout);
             
 
             int x = parseTable[temp->val.nt_val][readToken->token];
+            int sync_flag = 1;                                      // if flag is 1, token read in follow of temp; if flag 0, continue skipping input symbol until 1; 
+            // printf("rule number: %d\n",x);
+            // fflush(stdout);
+            do{    
+                if(x!=-1){
+                    
+                    pushDerivation(mainStack,table[temp->val.nt_val][x]);
+                    printf("Stack: \n");
+                    printStack(mainStack);
+                    printf("\n \n");
+                    // readToken = runLexerForParser(testcaseFile,10);
+                    sync_flag = 1;
 
-            printf("rule number: %d\n",x);
-            fflush(stdout);
-            if(x!=-1){
-                
-                pushDerivation(mainStack,table[temp->val.nt_val][x]);
-                printf("Stack: \n");
-                printStack(mainStack);
-                printf("\n \n");
-                // readToken = runLexerForParser(testcaseFile,10);
+                }
+                else{
+                    if(readToken->token == ENDOFFILE){
+                        printf("ERROR: Input consumed but Stack not empty\n\n\n");
+                        while(reachEnd(mainStack)==1 && top(mainStack)->val.t_val != ENDOFFILE ){
+                            pop(mainStack);
+                        }
+                    }
+                    else{
+                        printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
+                        printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
 
+                        sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
+                        printf("%d \n", sync_flag);
+                        readToken = runLexerForParser(testcaseFile,10);
+                    }
+
+                }
             }
-            else{
-                printf("ERROR: Syntactic error\n");
-            }
+            while(0);
         }
         else{
             printf("ERROR: Stack emptied before input consumed\n");
