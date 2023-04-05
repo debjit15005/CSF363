@@ -22,6 +22,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <ctype.h>
 
 int line, b_id, beg_id, forward, begin;
 int BufferSize;

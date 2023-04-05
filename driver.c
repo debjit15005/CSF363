@@ -10,24 +10,28 @@
 #include "hashtable.h"
 
 int main(){
-	// buildGrammar();
-	// computeFirsts();
-	// printf("Firsts done\n");
+	initializeLexerOnce();
+	buildGrammar();
+	automaticFirsts();
 	// printFirsts();
 	// printf("***********************************************\n");
-	// computeFollows();
-	// printf("Follows done\n");
-	// // // printFollows();
+	// computeFirsts();
+	// // printf("Firsts done\n");
+	// printFirsts();
 	// printf("***********************************************\n");
-	// createParseTable();
-	// int** parseTable = getParseTable();
-	// printf("ParseTable done\n");
+	automaticFollows();
+	// computeFollows();
+	// // printf("Follows done\n");
+	// printFollows();
+	// printf("***********************************************\n");
 	
-	// // int** parseTable = getParseTable();
-	// // printParseTable(); 
-	// parseInputSourceCode("input.txt",parseTable);
-	// tokenInfo* parserToken = runLexerForParser("input.txt", 10);
-	// printToken(parserToken);
+
+	createParseTable();
+	int** parseTable = getParseTable();
+	// printf("ParseTable done\n");
+	// printParseTable(); 
+	parseInputSourceCode("input.txt",parseTable);
+	
 
 	
 	// Stack* test = newStack();
@@ -39,7 +43,7 @@ int main(){
 	// printf("Test");
 
 	// runLexer("input.txt",10);
-	runGrammar();
+	// runGrammar();
 	
 
 

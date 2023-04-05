@@ -2,7 +2,7 @@
 #ifndef LEXERDEF_H
 #define LEXERDEF_H
  #define BUFFER_SIZE (1<<25)
-#define MAX_LEXEME 100
+#define MAX_LEXEME 1000
 #define TOKEN_COUNT 60
 typedef enum { 
     INTEGER,

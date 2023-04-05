@@ -49,8 +49,8 @@ void pushDerivation(Stack* mainStack, RULE rhs)
 {
     // printRule(rhs);
     // LIST list = duplicateRuleIntoList(rhs);
-    fflush(stdout);
-    pop(mainStack);
+    // fflush(stdout);
+    // pop(mainStack);
     NODE rhsptr = rhs->head->next; 
     NODE dup;
     // printList(list);
@@ -63,6 +63,7 @@ void pushDerivation(Stack* mainStack, RULE rhs)
         rhsptr = rhsptr->next;
     }
     // temp->list1->head = rhsptr;
+    // printf("\nTemp Stack:\n");
     // printStack(temp);
     while(reachEnd(temp))
     {

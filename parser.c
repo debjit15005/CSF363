@@ -23,6 +23,7 @@ NODE doFollows(int i);
 
 void createParseTable(){
     parseTable = (int**) malloc(NT_COUNT*sizeof(int*));
+    
 
     for(int i = 0; i < NT_COUNT; i++){
         parseTable[i] = (int*) malloc(TOKEN_COUNT*sizeof(int));
@@ -44,22 +45,33 @@ void createParseTable(){
             if(table[i][j] == NULL) break;
 
             rhs = table[i][j]->head->next;
+            // printRule(table[i][j]);
             while(ep && rhs!=NULL){ 
                 ep = 0;//epsilon flag
                 
                 if(rhs->tnt){                                   //if term is nt
                     nt = rhs->val.nt_val;
-                    currNode = firsts[nt];
+                    
+                    currNode = firsts[nt]->next;
+                    // printf("%d",currNode->val.t_val);
+                    
+                    // fflush(stdout);
                     
                     do{
+                        
                         if(currNode->val.t_val == EPSILON) ep = 1;      //set epsilon flag
+                        
                         parseTable[i][currNode->val.t_val] = j;
+                        // printf("NT\n");
+                        // fflush(stdout);
                         currNode = currNode->next;
+                        
                         
                     }
                     while(currNode!=NULL);                              //end of first(nt)
                 }
-                else{   
+                else{
+
                     if(rhs->val.t_val == EPSILON) ep = 1;
                     parseTable[i][rhs->val.t_val] = j;
                 }
@@ -67,7 +79,7 @@ void createParseTable(){
             }
 
             if(ep){                                         //follow of lhs NT 
-                currNode = follows[i];
+                currNode = follows[i]->next;
                 do{ 
                     parseTable[i][currNode->val.t_val] = j;
                     currNode = currNode->next;
@@ -114,7 +126,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     }
     while(reachEnd(mainStack))
     {   
-        printf("%d ",readToken->token); printT(readToken->token); printf("\n");  
+        printf("%d ",readToken->token); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
         fflush(stdout);
 
         // printToken(readToken);
@@ -133,9 +145,12 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             {
                 if(temp->val.t_val == EPSILON)
                 {
-                    printToken(readToken);
+                    // printToken(readToken);
                     temp = top(mainStack);
-                    pop(mainStack);
+                    // pop(mainStack);
+                    printf("Stack: \n");
+                    printStack(mainStack);
+                    printf("\n\n");
                     continue;
                 }
                 if(readToken->token == ENDOFFILE)
@@ -156,8 +171,12 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             {
                 // temp = top(mainStack);
                 // pop(mainStack);
-                // readToken = runLexerForParser(testcaseFile,10);
-                if(reachEnd(mainStack))
+                readToken = runLexerForParser(testcaseFile,10);
+                printf("Stack: \n");
+                printStack(mainStack);
+                printf("\n\n");
+
+                if(reachEnd(mainStack)==0)
                 {
                     printf("Finished parsing\n");
                 }
