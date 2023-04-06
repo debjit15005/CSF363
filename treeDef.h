@@ -18,6 +18,7 @@ struct TreeNode
         NT nt_val;
     } val;
     int line_no;
+    int rule_no;
     struct TreeNode* firstChild;
     struct TreeNode* nextSibling;    
     struct TreeNode* parent;    

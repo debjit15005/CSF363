@@ -4,8 +4,8 @@
 # ID: 2020A7PS0970P	Name: Debjit Kar
 # ID:2020A7PS0986P	Name: Nidhish Parekh
 
-runCompiler: driver.o grammar.o lexer.o linkedlist.o parser.o tree.o stack_ll.o HTable.o Nlinkedlist.o
-	gcc -o runCompiler driver.o grammar.o lexer.o linkedlist.o parser.o tree.o stack_ll.o HTable.o Nlinkedlist.o
+runCompiler: driver.o grammar.o lexer.o linkedlist.o parser.o tree.o stack_ll.o HTable.o Nlinkedlist.o ast.o
+	gcc -o runCompiler driver.o grammar.o lexer.o linkedlist.o parser.o tree.o stack_ll.o HTable.o Nlinkedlist.o ast.o
 driver.o: driver.c
 	gcc -c driver.c
 grammar.o: grammar.c grammarDef.h
@@ -24,5 +24,7 @@ HTable.o: HTable.c
 	gcc -c HTable.c
 Nlinkedlist.o: Nlinkedlist.c
 	gcc -c Nlinkedlist.c
+ast.o: ast.c ast.h astDef.h
+	gcc -c ast.c
 clean:
 	rm -rf *.o runCompiler

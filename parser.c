@@ -19,6 +19,7 @@ NODE* firsts;
 NODE* follows; 
 NODE doFirsts(int i);
 NODE doFollows(int i);
+TREENODE t1; // The parse tree
 
 
 void createParseTable(){
@@ -120,7 +121,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     int tek = 0;
     
     tek++;
-    TREENODE t1 = initTree();
+    t1 = initTree();
     t1->line_no = readToken->line_num;
     if(readToken->token == ENDOFFILE)
     {
@@ -128,7 +129,6 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     }
     while(reachEnd(mainStack))
     {   
-        printTree(t1, 0);
         printf("current token: "); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
         fflush(stdout);
 
@@ -156,11 +156,6 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printf("\n\n");
                     continue;
                 }
-                // if(readToken->token == ENDOFFILE)
-                // {
-                //     printf("ERROR: Input consumed but Stack not empty\n");
-                //     break; // CHECK
-                // } 
                 else
                 {
                     printf("ERROR: Terminal Mismatch\n\n");
@@ -203,9 +198,8 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printStack(mainStack);
                     printf("\n \n");
                     // readToken = runLexerForParser(testcaseFile,10);
-                    leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num);
+                    leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no);
                     sync_flag = 1;
-
                 }
                 else{
                     if(readToken->token == ENDOFFILE){
@@ -230,9 +224,8 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
         else{
             printf("ERROR: Stack emptied before input consumed\n");
         }
-
     }
-    
+    printTree(t1, 0);
 }
 
 void automaticFirsts()

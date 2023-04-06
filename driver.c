@@ -44,20 +44,5 @@ int main(){
 
 	// runLexer("input.txt",10);
 	// runGrammar();
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
 	return 0; 
-
 }

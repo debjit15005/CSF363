@@ -18,6 +18,7 @@ TREENODE initTree()
     temp->tnt = 1; // CHECK
     temp->line_no = -1;
     temp->val.nt_val = program; // CHECK
+    temp->rule_no = 0; // CHECK
     return temp;    
 }
 
@@ -28,12 +29,13 @@ TREENODE createEmptyNode()
     temp->nextSibling = NULL;   
     temp->parent = NULL;
     temp->tnt = -1; // CHECK
+    temp->rule_no = -1;
     temp->line_no = -1;
     return temp; 
 }
 
 
-void leftmostDerive(NODE deriv, TREENODE t1, int line_no)
+void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
 {
     TREENODE curr = t1;
     TREENODE parent = curr->parent;
@@ -56,19 +58,21 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no)
             if(curr->tnt == 0)
             {
                 while(parent->nextSibling == NULL) parent = parent->parent;
-                leftmostDerive(deriv, parent->nextSibling, line_no); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
+                leftmostDerive(deriv, parent->nextSibling, line_no, rule_no); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
                 return;
             } 
             else 
             {
-                leftmostDerive(deriv, curr, line_no); // RECURSIVELY ADD DERIVATION TO CURR
+                leftmostDerive(deriv, curr, line_no, rule_no); // RECURSIVELY ADD DERIVATION TO CURR
                 return;
             }
         }
         else
         {
+            curr->rule_no = rule_no;
             parents = curr;
             TREENODE temp = createEmptyNode();   
+            // temp->rule_no = rule_no;
             temp->parent = curr;
             temp->line_no = line_no;
             temp->tnt = deriv->tnt;
@@ -83,6 +87,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no)
     while(deriv!=NULL)
     {
         TREENODE temp = createEmptyNode();
+        // temp->rule_no = rule_no;
         temp->parent = parents;
         temp->tnt = deriv->tnt;
         temp->line_no = line_no;
@@ -101,7 +106,11 @@ void printTree(TREENODE node, int level)
         for (int i = 0; i < level; i++) printf("\t");
         printf("Level %d Node -> ", level);
         if(node->tnt == 0) printT(node->val.t_val);
-        else printNT(node->val.nt_val);
+        else 
+        {
+            printNT(node->val.nt_val);
+            printf(" Rule: %d", node->rule_no);
+        }
         printf("\n");
 
         if (node->firstChild != NULL)
