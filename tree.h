@@ -8,8 +8,9 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include "treeDef.h"
 
 TREENODE initTree();
-void leftmostDerive(NODE deriv, TREENODE t1);
+TREENODE createEmptyNode();
+void leftmostDerive(NODE deriv, TREENODE t1, int line_no);
 void runTree(void);
-void printTree(TREENODE t1);
+void printTree(TREENODE t1, int level);
 
 #endif

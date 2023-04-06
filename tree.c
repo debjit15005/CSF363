@@ -16,14 +16,28 @@ TREENODE initTree()
     temp->nextSibling = NULL;   
     temp->parent = NULL;
     temp->tnt = 1; // CHECK
+    temp->line_no = -1;
     temp->val.nt_val = program; // CHECK
     return temp;    
 }
 
-void leftmostDerive(NODE deriv, TREENODE t1)
+TREENODE createEmptyNode()
+{
+    TREENODE temp = (TREENODE) malloc(sizeof(struct TreeNode));
+    temp->firstChild = NULL;
+    temp->nextSibling = NULL;   
+    temp->parent = NULL;
+    temp->tnt = -1; // CHECK
+    temp->line_no = -1;
+    return temp; 
+}
+
+
+void leftmostDerive(NODE deriv, TREENODE t1, int line_no)
 {
     TREENODE curr = t1;
-    TREENODE parent;
+    TREENODE parent = curr->parent;
+    TREENODE parents;
     if(deriv != NULL)
     {
         while(curr->firstChild != NULL) // LOOP WHILE CHILD IS TERMINAL
@@ -41,21 +55,22 @@ void leftmostDerive(NODE deriv, TREENODE t1)
             }  
             if(curr->tnt == 0)
             {
-                leftmostDerive(deriv, parent->nextSibling); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
+                while(parent->nextSibling == NULL) parent = parent->parent;
+                leftmostDerive(deriv, parent->nextSibling, line_no); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
                 return;
             } 
             else 
             {
-                leftmostDerive(deriv, curr); // RECURSIVELY ADD DERIVATION TO CURR
+                leftmostDerive(deriv, curr, line_no); // RECURSIVELY ADD DERIVATION TO CURR
                 return;
             }
         }
         else
         {
-            TREENODE temp = (TREENODE) malloc(sizeof(struct TreeNode));
-            temp->firstChild = NULL;
-            temp->nextSibling = NULL;   
+            parents = curr;
+            TREENODE temp = createEmptyNode();   
             temp->parent = curr;
+            temp->line_no = line_no;
             temp->tnt = deriv->tnt;
             if(temp->tnt == 0) temp->val.t_val = deriv->val.t_val;
             else temp->val.nt_val = deriv->val.nt_val;
@@ -67,11 +82,10 @@ void leftmostDerive(NODE deriv, TREENODE t1)
     }
     while(deriv!=NULL)
     {
-        TREENODE temp = (TREENODE) malloc(sizeof(struct TreeNode));
-        temp->firstChild = NULL;
-        temp->nextSibling = NULL;   
-        temp->parent = NULL;
+        TREENODE temp = createEmptyNode();
+        temp->parent = parents;
         temp->tnt = deriv->tnt;
+        temp->line_no = line_no;
         if(temp->tnt == 0) temp->val.t_val = deriv->val.t_val;
         else temp->val.nt_val = deriv->val.nt_val;
         curr->nextSibling = temp;
@@ -102,23 +116,23 @@ void printTree(TREENODE node, int level)
 
 void runTree(void)
 {
-    TREENODE t1 = initTree();
-    RULE temp = createNewRule(program, 0);
-    addTermToRule(temp, 0, 0, 1);
-    addTermToRule(temp, 0, 0, 0);
-    addTermToRule(temp, 0, 1, 1);
-    RULE temp2 = createNewRule(moduleDeclarations, 1);
-    addTermToRule(temp2, 0, 0, 1);
-    addTermToRule(temp2, 0, 0, 0);
-    addTermToRule(temp2, 0, 0, 0);
-    RULE temp3 = createNewRule(moduleDeclaration, 2);
-    addTermToRule(temp3, 0, 0, 0);
-    addTermToRule(temp3, 0, 0, 0);
-    addTermToRule(temp3, 0, 0, 0);
-    leftmostDerive(temp->head->next, t1);
-    leftmostDerive(temp2->head->next, t1);
-    leftmostDerive(temp3->head->next, t1);
-    printTree(t1, 0);
+    // TREENODE t1 = initTree();
+    // RULE temp = createNewRule(program, 0);
+    // addTermToRule(temp, 0, 0, 1);
+    // addTermToRule(temp, 0, 0, 0);
+    // addTermToRule(temp, 0, 1, 1);
+    // RULE temp2 = createNewRule(moduleDeclarations, 1);
+    // addTermToRule(temp2, 0, 0, 1);
+    // addTermToRule(temp2, 0, 0, 0);
+    // addTermToRule(temp2, 0, 0, 0);
+    // RULE temp3 = createNewRule(moduleDeclaration, 2);
+    // addTermToRule(temp3, 0, 0, 0);
+    // addTermToRule(temp3, 0, 0, 0);
+    // addTermToRule(temp3, 0, 0, 0);
+    // leftmostDerive(temp->head->next, t1);
+    // leftmostDerive(temp2->head->next, t1);
+    // leftmostDerive(temp3->head->next, t1);
+    // printTree(t1, 0);
 }
 
 

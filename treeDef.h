@@ -17,6 +17,7 @@ struct TreeNode
         token t_val;
         NT nt_val;
     } val;
+    int line_no;
     struct TreeNode* firstChild;
     struct TreeNode* nextSibling;    
     struct TreeNode* parent;    

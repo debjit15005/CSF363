@@ -120,13 +120,15 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     int tek = 0;
     
     tek++;
-    // TREENODE t1 = initTree();
+    TREENODE t1 = initTree();
+    t1->line_no = readToken->line_num;
     if(readToken->token == ENDOFFILE)
     {
         printf("File is empty\n");
     }
     while(reachEnd(mainStack))
     {   
+        printTree(t1, 0);
         printf("current token: "); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
         fflush(stdout);
 
@@ -201,6 +203,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printStack(mainStack);
                     printf("\n \n");
                     // readToken = runLexerForParser(testcaseFile,10);
+                    leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num);
                     sync_flag = 1;
 
                 }
@@ -228,12 +231,8 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             printf("ERROR: Stack emptied before input consumed\n");
         }
 
-
-        
-        
     }
-
-
+    
 }
 
 void automaticFirsts()

@@ -6,7 +6,6 @@ end
 <<module empty>>
 takes input[:boolean];
 start
-end
 
 
 ** print the following message on the console
