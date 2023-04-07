@@ -9,7 +9,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 
 TREENODE initTree();
 TREENODE createEmptyNode();
-void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no);
+void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no, long long i_val, float f_val, char* lexeme);
 void runTree(void);
 void printTree(TREENODE t1, int level);
 

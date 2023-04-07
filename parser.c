@@ -125,9 +125,13 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     tek++;
     t1 = initTree();
     t1->line_no = readToken->line_num;
+    char lexeme[MAX_LEXEME];
+    
+
     if(readToken->token == ENDOFFILE)
     {
         printf("File is empty\n");
+        return;
     }
     while(reachEnd(mainStack))
     {   
@@ -190,8 +194,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
 
             int x = parseTable[temp->val.nt_val][readToken->token];
             int sync_flag = 1;  // if flag is 1, token read in follow of temp; if flag 0, continue skipping input symbol until 1; 
-            // printf("rule number: %d\n",x);
-            // fflush(stdout);
+            
             do{    
                 if(x!=-1){
                     
@@ -199,8 +202,13 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printf("Stack: \n");
                     printStack(mainStack);
                     printf("\n \n");
-                    // readToken = runLexerForParser(testcaseFile,10);
-                    leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no);
+                    if(readToken->token == NUM) leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, readToken->tv.i_val, 0, lexeme); 
+                    else if(readToken->token == RNUM) leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, 0, readToken->tv.f_val, lexeme) ;
+                    else {
+                        strcpy(lexeme,readToken->tv.lexeme);
+                        leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, 0, 0, lexeme);
+                        }
+                    
                     sync_flag = 1;
                 }
                 else{
@@ -227,6 +235,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             printf("ERROR: Stack emptied before input consumed\n");
         }
     }
+    printf("\n");
     printTree(t1, 0);
     printf("***********************************\n");
     ASTNODE temp = createAST(t1);
