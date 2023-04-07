@@ -1,6 +1,5 @@
 declare module mod1;
 <<<driver program>>>
 start
-    declare A:array [+1..-10] of integer;
-    print(A);
+    w:= true and true or false;
 end

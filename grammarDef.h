@@ -92,7 +92,17 @@ typedef enum {
 	signedNum,
 	getValue,
 	printValue,
-	arrElement
+	arrElement,
+	assignOp,
+	uniOp,
+	ANDOp,
+	OROp,
+	LTOp,
+	LEOp,
+	GTOp,
+	GEOp,
+	EQOp,
+	NEOp
 } NT;
 
 #endif

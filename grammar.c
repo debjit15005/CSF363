@@ -102,6 +102,16 @@ void printNT(NT term){
     case 78: printf("CONSTRUCT: getValue"); break;
     case 79: printf("CONSTRUCT: printValue"); break;
     case 80: printf("CONSTRUCT: arrElement"); break;
+    case 81: printf("CONSTRUCT: assignOp"); break;
+    case 82: printf("CONSTRUCT: uniOp"); break;
+    case 83: printf("CONSTRUCT: ANDOp"); break;
+    case 84: printf("CONSTRUCT: OROp"); break;
+    case 85: printf("CONSTRUCT: LTOp"); break;
+    case 86: printf("CONSTRUCT: LEOp"); break;
+    case 87: printf("CONSTRUCT: GTOp"); break;
+    case 88: printf("CONSTRUCT: GEOp"); break;
+    case 89: printf("CONSTRUCT: EQOp"); break;
+    case 90: printf("CONSTRUCT: NEOp"); break;
     
 	default: printf("<unknown>"); break; 
 	}
@@ -190,6 +200,16 @@ void fprintNT(FILE* fp, NT term){
     case 78: fprintf(fp, "CONSTRUCT: getValue"); break;
     case 79: fprintf(fp, "CONSTRUCT: printValue"); break;
     case 80: fprintf(fp, "CONSTRUCT: arrElement"); break;
+    case 81: fprintf(fp, "CONSTRUCT: assignOp"); break;
+    case 82: fprintf(fp, "CONSTRUCT: uniOp"); break;
+    case 83: fprintf(fp, "CONSTRUCT: ANDOp"); break;
+    case 84: fprintf(fp, "CONSTRUCT: OROp"); break;
+    case 85: fprintf(fp, "CONSTRUCT: LTOp"); break;
+    case 86: fprintf(fp, "CONSTRUCT: LEOp"); break;
+    case 87: fprintf(fp, "CONSTRUCT: GTOp"); break;
+    case 88: fprintf(fp, "CONSTRUCT: GEOp"); break;
+    case 89: fprintf(fp, "CONSTRUCT: EQOp"); break;
+    case 90: fprintf(fp, "CONSTRUCT: NEOp"); break;
     
 	default: fprintf(fp, "<unknown>"); break; 
 	}
