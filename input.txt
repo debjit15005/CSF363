@@ -1,4 +1,6 @@
+declare module mod1;
 <<<driver program>>>
 start
-    declare x: integer;
+    declare A:array [+1..-10] of integer;
+    print(A);
 end

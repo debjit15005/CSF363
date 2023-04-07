@@ -85,7 +85,14 @@ typedef enum {
 	actual_para_list,
 	actual_para_list2,
 	Term9,
-	K
+	K,
+	idType,
+	arrType,
+	arrRangeType,
+	signedNum,
+	getValue,
+	printValue,
+	arrElement
 } NT;
 
 #endif

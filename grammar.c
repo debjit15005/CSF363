@@ -94,7 +94,14 @@ void printNT(NT term){
     case 70: printf("<actual_para_list>"); break;
     case 71: printf("<actual_para_list2>"); break;
     case 72: printf("<Term9>"); break;
-    case 73: printf("<K>"); break; 
+    case 73: printf("<K>"); break;
+    case 74: printf("CONSTRUCT: idType"); break;
+    case 75: printf("CONSTRUCT: arrType"); break;
+    case 76: printf("CONSTRUCT: arrRangeType"); break;
+    case 77: printf("CONSTRUCT: signedNum"); break;
+    case 78: printf("CONSTRUCT: getValue"); break;
+    case 79: printf("CONSTRUCT: printValue"); break;
+    case 80: printf("CONSTRUCT: arrElement"); break;
     
 	default: printf("<unknown>"); break; 
 	}
@@ -176,6 +183,13 @@ void fprintNT(FILE* fp, NT term){
     case 71: fprintf(fp, "<actual_para_list2>"); break;
     case 72: fprintf(fp, "<Term9>"); break;
     case 73: fprintf(fp, "<K>"); break; 
+    case 74: fprintf(fp, "CONSTRUCT: idType"); break;
+    case 75: fprintf(fp, "CONSTRUCT: arrType"); break;
+    case 76: fprintf(fp, "CONSTRUCT: arrRangeType"); break;
+    case 77: fprintf(fp, "CONSTRUCT: signedNum"); break;
+    case 78: fprintf(fp, "CONSTRUCT: getValue"); break;
+    case 79: fprintf(fp, "CONSTRUCT: printValue"); break;
+    case 80: fprintf(fp, "CONSTRUCT: arrElement"); break;
     
 	default: fprintf(fp, "<unknown>"); break; 
 	}
@@ -433,7 +447,6 @@ void buildGrammar(){
     table[sign][2] = createNewRule(sign,54);
         addTermToRule(table[sign][2],EPSILON,rhs,0); 
  
-
     table[moduleReuseStmt][0] = createNewRule(moduleReuseStmt,55);
     addTermToRule(table[moduleReuseStmt][0],terminal,optional,1);
     addTermToRule(table[moduleReuseStmt][0],USE,rhs,0);
