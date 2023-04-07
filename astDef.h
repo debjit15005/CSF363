@@ -14,6 +14,7 @@ struct ASTNode {
         NT nt_val;
     } val;
     int line_no;
+    char* lexeme;
     struct ASTNode* firstChild;
     struct ASTNode* nextSibling;    
     struct ASTNode* parent; 

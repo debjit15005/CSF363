@@ -39,7 +39,7 @@ void setASTChild(ASTNODE asTree, int child_count, ASTNODE childNode) // child_co
     }
 }
 
-TREENODE getASTChild(ASTNODE asTree, int child_count) // child_count is 0-indexed
+ASTNODE getASTChild(ASTNODE asTree, int child_count) // child_count is 0-indexed
 {
     asTree = asTree->firstChild;
     while(child_count-->0)
@@ -104,7 +104,16 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 
     ASTNODE node = malloc(sizeof(struct ASTNode));
     node->tnt = parseTree->tnt;
-    if(parseTree->tnt == 0) node->val.t_val = parseTree->val.t_val;
+    if(parseTree->tnt == 0)
+    {   
+        token t = parseTree->val.t_val;
+        node->val.t_val = t;
+        // if(t == ID || t == NUM || t == RNUM)
+        // {
+        //     node->lexeme = (char *) malloc(MAX_LEXEME);
+        //     // ADD CODE TO ASSIGN CORRESPONDING LEXEME
+        // }
+    } 
     else node->val.nt_val = parseTree->val.nt_val;
     node->line_no = -1;
     node->firstChild = NULL;
@@ -118,8 +127,6 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 
         for(int i = 0; i<4; i++)
         {
-            printf("%d\n", i);
-            fflush(stdout);
             TREENODE childNode = getParseChild(parseTree, i);
             setASTChild(node, i, doRecursion(childNode, NULL)); // CHECK IF THIS ASSIGNMENT WILL WORK
             // free(childNode); // CHECK IF THIS REMOVES THE INTERNAL NODE OR 'childNode'
@@ -163,7 +170,6 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     {
         //<driverModule> → DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
 
-        for(int i = 0; i<4; i++) free(getParseChild(parseTree, i));
         TREENODE childNode = getParseChild(parseTree, 4);
         setASTChild(node, 0, doRecursion(childNode, NULL));
     
@@ -274,16 +280,10 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     {
         //<moduleDef> → START <statements> END
 
-        free(getParseChild(parseTree, 0));
-        free(getParseChild(parseTree, 2));
         TREENODE childNode = getParseChild(parseTree, 1);
         free(node);
         return(doRecursion(childNode, NULL));
-        // printf("here\n");
-        // fflush(stdout);
 
-        // getASTChild(asTree, 0) = doRecursion(childNode, NULL);
-        // free(childNode);
     }
     else if( production_rule == 25)
     {
@@ -298,7 +298,6 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return convertToAST(childNode);
-        // free(childNode);
     
     }
     else if( production_rule == 27)
@@ -544,19 +543,22 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 67)
     {
         //<idList> -> ID <idList2>
-    
+        // setASTChild(node, 0, doRecursion(childNode, NULL)); 
+        // setASTChild(node, 1, doRecursion(childNode, NULL)); 
     
     }
     else if( production_rule == 68)
     {
         //<idList2> -> COMMA ID <idList2>
-    
+
     
     }
     else if( production_rule == 69)
     {
         //<idList2> -> EPSILON
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     
     }
     else if( production_rule == 70)

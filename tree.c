@@ -42,7 +42,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
     TREENODE parents;
     if(deriv != NULL)
     {
-        while(curr->firstChild != NULL) // LOOP WHILE CHILD IS TERMINAL
+        while(curr->firstChild != NULL) // LOOP WHILE CHILD EXISTS
         {   
             parent = curr;
             curr = curr->firstChild;
@@ -71,8 +71,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
         {
             curr->rule_no = rule_no;
             parents = curr;
-            TREENODE temp = createEmptyNode();   
-            // temp->rule_no = rule_no;
+            TREENODE temp = createEmptyNode();
             temp->parent = curr;
             temp->line_no = line_no;
             temp->tnt = deriv->tnt;
@@ -87,7 +86,6 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
     while(deriv!=NULL)
     {
         TREENODE temp = createEmptyNode();
-        // temp->rule_no = rule_no;
         temp->parent = parents;
         temp->tnt = deriv->tnt;
         temp->line_no = line_no;

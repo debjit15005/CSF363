@@ -24,7 +24,6 @@ struct linked_list
     int rule_no;
     NT nt_val;
     NODE head;
-    
 };
 typedef struct linked_list linked_list;
 typedef linked_list * RULE;

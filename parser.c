@@ -119,9 +119,9 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     printf("\nInitial Stack: \n");
     printStack(mainStack);
     printf("\n");
-    
+
     int tek = 0;
-    
+
     tek++;
     t1 = initTree();
     t1->line_no = readToken->line_num;
@@ -189,7 +189,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             
 
             int x = parseTable[temp->val.nt_val][readToken->token];
-            int sync_flag = 1;                                      // if flag is 1, token read in follow of temp; if flag 0, continue skipping input symbol until 1; 
+            int sync_flag = 1;  // if flag is 1, token read in follow of temp; if flag 0, continue skipping input symbol until 1; 
             // printf("rule number: %d\n",x);
             // fflush(stdout);
             do{    
