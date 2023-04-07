@@ -2,7 +2,8 @@
 #define AST_H
 #include "astDef.h"
 
-void createAST(TREENODE parseTree);
+ASTNODE createAST(TREENODE parseTree);
+void printAST(ASTNODE node, int level);
 ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree);
 
 #endif

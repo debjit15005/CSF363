@@ -10,8 +10,10 @@ ID:2020A7PS0986P    Name: Nidhish Parekh
 #include "lexer.h"
 #include "linkedlist.h"
 #include "tree.h"
+#include "ast.h"
 #include <stdio.h>
 #include <stdlib.h>
+
  
 
 int** parseTable;
@@ -226,6 +228,9 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
         }
     }
     printTree(t1, 0);
+    printf("***********************************\n");
+    ASTNODE temp = createAST(t1);
+	printAST(temp, 0);
 }
 
 void automaticFirsts()

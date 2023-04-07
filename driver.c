@@ -8,6 +8,7 @@
 #include "linkedlist.h"
 #include "Nlinkedlist.h"
 #include "hashtable.h"
+#include "ast.h"
 
 int main(){
 	initializeLexerOnce();
@@ -31,8 +32,6 @@ int main(){
 	// printf("ParseTable done\n");
 	// printParseTable(); 
 	parseInputSourceCode("input.txt",parseTable);
-	
-
 	
 	// Stack* test = newStack();
 	// NODE t1 = createNewTerm(0,0,1);
