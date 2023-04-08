@@ -10,14 +10,14 @@
 #include "Nlinkedlist.h"
 #include "hashtable.h"
 
+char** reqLexeme;
+int currIndex = 0;
 
-ASTNODE createAST(TREENODE parseTree)
+ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
 {
+    reqLexeme = receivedLexeme;
     ASTNODE asTree = doRecursion(parseTree, NULL);
-    asTree->tnt = 1;
-    asTree->val.nt_val = program;
-    asTree->line_no = -1; // CHECK
-    
+    free(reqLexeme);
     return asTree;
 }
 
@@ -63,7 +63,16 @@ ASTNODE convertToAST(TREENODE parseTree)
 {
     ASTNODE asTree = (ASTNODE) malloc(sizeof(struct ASTNode));
     asTree->tnt = parseTree->tnt;
-    if(parseTree->tnt == 0) asTree->val.t_val = parseTree->val.t_val;
+    if(parseTree->tnt == 0) 
+    {
+        token t = parseTree->val.t_val;
+        asTree->val.t_val = t;
+        if(t == ID || t == NUM || t == RNUM)
+        {
+            asTree->lexeme = (char *) malloc(MAX_LEXEME);
+            strcpy(asTree->lexeme, reqLexeme[currIndex++]);
+        }
+    }
     else asTree->val.nt_val = parseTree->val.nt_val;
     asTree->line_no = parseTree->line_no;
     asTree->firstChild = NULL;
@@ -78,7 +87,12 @@ void printAST(ASTNODE node, int level)
     {
         for (int i = 0; i < level; i++) printf("\t");
         printf("Level %d Node -> ", level);
-        if(node->tnt == 0) printT(node->val.t_val);
+        if(node->tnt == 0)
+        {
+            token t = node->val.t_val;
+            printT(t);
+            if(t == ID || t == NUM || t == RNUM) printf(" %s", node->lexeme);
+        }
         else 
         {
             printNT(node->val.nt_val);
@@ -99,8 +113,6 @@ void printAST(ASTNODE node, int level)
 ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 {
     int production_rule = parseTree->rule_no;
-    // printf("Production rule is: %d\n", production_rule);
-    // fflush(stdout);
 
     ASTNODE node = malloc(sizeof(struct ASTNode));
     node->tnt = parseTree->tnt;
@@ -108,14 +120,14 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     {   
         token t = parseTree->val.t_val;
         node->val.t_val = t;
-        // if(t == ID || t == NUM || t == RNUM)
-        // {
-        //     node->lexeme = (char *) malloc(MAX_LEXEME);
-        //     // ADD CODE TO ASSIGN CORRESPONDING LEXEME
-        // }
+        if(t == ID || t == NUM || t == RNUM)
+        {
+            node->lexeme = (char *) malloc(MAX_LEXEME);
+            strcpy(node->lexeme, reqLexeme[currIndex++]);
+        }
     } 
     else node->val.nt_val = parseTree->val.nt_val;
-    // node->line_no = -1;
+    node->line_no = parseTree->line_no;
     node->firstChild = NULL;
     node->nextSibling = NULL;    
     node->parent = NULL; 

@@ -22,6 +22,10 @@ NODE* follows;
 NODE doFirsts(int i);
 NODE doFollows(int i);
 TREENODE t1; // The parse tree
+char** reqLexeme;
+
+// TODO : FREE reqLexeme
+
 
 
 void createParseTable(){
@@ -125,6 +129,10 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     printStack(mainStack);
     printf("\n");
 
+    int CURRENT_ARRAY_SIZE = 30;
+    reqLexeme = (char **) malloc(CURRENT_ARRAY_SIZE*sizeof(char *));
+    int lexemeIndex = 0;
+
     int tek = 0;
 
     tek++;
@@ -142,10 +150,6 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     {   
         printf("current token: "); printT(readToken->token); printf(" "); printToken(readToken); printf("\n");  
         fflush(stdout);
-
-        // printToken(readToken);
-        // printf("\n");
-        // fflush(stdout);
         
         NODE temp = top(mainStack);
 
@@ -180,6 +184,20 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
             {
                 // temp = top(mainStack);
                 // pop(mainStack);
+                token t = readToken->token;
+                if(t == ID || t == NUM || t == RNUM)
+                {
+                    if(lexemeIndex == CURRENT_ARRAY_SIZE)
+                    {
+                        CURRENT_ARRAY_SIZE *= 2;
+                        reqLexeme = (char **) realloc(reqLexeme, CURRENT_ARRAY_SIZE*sizeof(char *));
+                    } 
+                    reqLexeme[lexemeIndex] = (char *) malloc(MAX_LEXEME);
+                    if(t == ID) strcpy(reqLexeme[lexemeIndex++], readToken->tv.lexeme);
+                    else if(t == NUM) sprintf(reqLexeme[lexemeIndex++], "%lld", readToken->tv.i_val);
+                    else sprintf(reqLexeme[lexemeIndex++], "%f", readToken->tv.f_val);
+                }
+                
                 readToken = runLexerForParser(testcaseFile,10);
                 printf("Stack: \n");
                 printStack(mainStack);
@@ -207,13 +225,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                     printf("Stack: \n");
                     printStack(mainStack);
                     printf("\n \n");
-                    if(readToken->token == NUM) leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, readToken->tv.i_val, 0, lexeme); 
-                    else if(readToken->token == RNUM) leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, 0, readToken->tv.f_val, lexeme) ;
-                    else {
-                        strcpy(lexeme,readToken->tv.lexeme);
-                        leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no, 0, 0, lexeme);
-                        }
-                    
+                    leftmostDerive(table[temp->val.nt_val][x]->head->next, t1, readToken->line_num, table[temp->val.nt_val][x]->rule_no);
                     sync_flag = 1;
                 }
                 else{
@@ -241,9 +253,10 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
         }
     }
     printf("\n");
-    printTree(t1, 0);
-    printf("***********************************\n");
-    ASTNODE temp = createAST(t1);
+    // printTree(t1, 0);
+    // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
+    // printf("\n***********************************\n");
+    ASTNODE temp = createAST(t1, reqLexeme);
 	printAST(temp, 0);
 }
 
