@@ -17,11 +17,6 @@ struct TreeNode
         token t_val;
         NT nt_val;
     } val;
-    union data{
-        long long i_val;
-        float f_val;
-        char lexeme[MAX_LEXEME];
-    } tv;
     int line_no;
     int rule_no;
     struct TreeNode* firstChild;

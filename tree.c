@@ -15,10 +15,10 @@ TREENODE initTree()
     temp->firstChild = NULL;
     temp->nextSibling = NULL;   
     temp->parent = NULL;
-    temp->tnt = 1; // CHECK
+    temp->tnt = 1; 
     temp->line_no = -1;
-    temp->val.nt_val = program; // CHECK
-    temp->rule_no = 0; // CHECK
+    temp->val.nt_val = program;
+    temp->rule_no = 0;
     return temp;    
 }
 
@@ -35,7 +35,7 @@ TREENODE createEmptyNode()
 }
 
 
-void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no, long long i_val, float f_val, char* lexeme)
+void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
 {
     TREENODE curr = t1;
     TREENODE parent = curr->parent;
@@ -58,12 +58,12 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no, long long
             if(curr->tnt == 0)
             {
                 while(parent->nextSibling == NULL) parent = parent->parent;
-                leftmostDerive(deriv, parent->nextSibling, line_no, rule_no, i_val, f_val, lexeme); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
+                leftmostDerive(deriv, parent->nextSibling, line_no, rule_no); // LAST CHILD IS TERMINAL THEN LOOK AT UNCLE
                 return;
             } 
             else 
             {
-                leftmostDerive(deriv, curr, line_no, rule_no, i_val, f_val, lexeme); // RECURSIVELY ADD DERIVATION TO CURR
+                leftmostDerive(deriv, curr, line_no, rule_no); // RECURSIVELY ADD DERIVATION TO CURR
                 return;
             }
         }
@@ -75,14 +75,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no, long long
             temp->parent = curr;
             temp->line_no = line_no;
             temp->tnt = deriv->tnt;
-            if(temp->tnt == 0){ 
-                temp->val.t_val = deriv->val.t_val;
-                if(deriv->val.t_val == NUM) temp->tv.i_val = i_val;
-                else if(deriv->val.t_val == RNUM) temp->tv.f_val = f_val;
-                else{
-                    strcpy(temp->tv.lexeme,lexeme);
-                }
-            }
+            if(temp->tnt == 0) temp->val.t_val = deriv->val.t_val;
             else temp->val.nt_val = deriv->val.nt_val;
             
             curr->firstChild = temp;
@@ -97,14 +90,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no, long long
         temp->parent = parents;
         temp->tnt = deriv->tnt;
         temp->line_no = line_no;
-        if(temp->tnt == 0){
-            temp->val.t_val = deriv->val.t_val;
-            if(deriv->val.t_val == NUM) temp->tv.i_val = i_val;
-            else if(deriv->val.t_val == RNUM) temp->tv.f_val = f_val;
-            else{
-                strcpy(temp->tv.lexeme,lexeme);
-            }
-        }
+        if(temp->tnt == 0) temp->val.t_val = deriv->val.t_val;
         else temp->val.nt_val = deriv->val.nt_val;
         curr->nextSibling = temp;
         curr = curr->nextSibling;

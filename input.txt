@@ -3,6 +3,6 @@ declare module mod1;
 start
     while(true)
     start
-        [a, b, c] := use module mod1 with parameters +5, true;
+        [a, b, c] := use module mod1 with parameters 17.1, f, true;
     end
 end
