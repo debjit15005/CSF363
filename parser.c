@@ -98,8 +98,13 @@ void createParseTable(){
 
 void printParseTable(){
     for(int i = 0; i < NT_COUNT; i++){
+        printNT(i);
         for(int j = 0; j < TOKEN_COUNT; j++){
-            if(parseTable[i][j]!=-1) printf("%d ", parseTable[i][j]);
+            if(parseTable[i][j]!=-1)
+            {
+                printf(" ");
+                printT(j);
+            }
             // fflush(stdout);
             if(j == TOKEN_COUNT-1) printf("\n");
         }

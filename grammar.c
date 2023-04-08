@@ -112,6 +112,17 @@ void printNT(NT term){
     case 88: printf("CONSTRUCT: GEOp"); break;
     case 89: printf("CONSTRUCT: EQOp"); break;
     case 90: printf("CONSTRUCT: NEOp"); break;
+    case 91: printf("CONSTRUCT: PLUSOp"); break;
+    case 92: printf("CONSTRUCT: MINUSOp"); break;
+    case 93: printf("CONSTRUCT: MULOp"); break;
+    case 94: printf("CONSTRUCT: DIVOp"); break;
+    case 95: printf("CONSTRUCT: cases"); break;
+    case 96: printf("CONSTRUCT: switchOp"); break;
+    case 97: printf("CONSTRUCT: case"); break;
+    case 98: printf("CONSTRUCT: forIDnRange"); break;
+    case 99: printf("CONSTRUCT: for_loop"); break;
+    case 100: printf("CONSTRUCT: while_loop"); break;
+    case 101: printf("CONSTRUCT: function_Call"); break;
     
 	default: printf("<unknown>"); break; 
 	}
@@ -210,6 +221,17 @@ void fprintNT(FILE* fp, NT term){
     case 88: fprintf(fp, "CONSTRUCT: GEOp"); break;
     case 89: fprintf(fp, "CONSTRUCT: EQOp"); break;
     case 90: fprintf(fp, "CONSTRUCT: NEOp"); break;
+    case 91: fprintf(fp, "CONSTRUCT: PLUSOp"); break;
+    case 92: fprintf(fp, "CONSTRUCT: MINUSOp"); break;
+    case 93: fprintf(fp, "CONSTRUCT: MULOp"); break;
+    case 94: fprintf(fp, "CONSTRUCT: DIVOp"); break;
+    case 95: fprintf(fp, "CONSTRUCT: cases"); break;
+    case 96: fprintf(fp, "CONSTRUCT: switchOp"); break;
+    case 97: fprintf(fp, "CONSTRUCT: case"); break;
+    case 98: fprintf(fp, "CONSTRUCT: forIDnRange"); break;
+    case 99: fprintf(fp, "CONSTRUCT: for_loop"); break;
+    case 100: fprintf(fp, "CONSTRUCT: while_loop"); break;
+    case 101: fprintf(fp, "CONSTRUCT: function_Call"); break;
     
 	default: fprintf(fp, "<unknown>"); break; 
 	}

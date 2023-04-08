@@ -99,8 +99,8 @@ void printAST(ASTNODE node, int level)
 ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 {
     int production_rule = parseTree->rule_no;
-    printf("Production rule is: %d\n", production_rule);
-    fflush(stdout);
+    // printf("Production rule is: %d\n", production_rule);
+    // fflush(stdout);
 
     ASTNODE node = malloc(sizeof(struct ASTNode));
     node->tnt = parseTree->tnt;
@@ -610,6 +610,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 44)
     {
         //<assignmentStmt> → ID <whichStmt>
+
         free(node);
         TREENODE childNode1 = getParseChild(parseTree, 0);
         ASTNODE idNode = doRecursion(childNode1, NULL);
@@ -621,6 +622,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 45)
     {
         //<whichStmt> → <lvalueIDStmt>
+
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return(doRecursion(childNode, asTree));
@@ -629,6 +631,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 46)
     {
         //<whichStmt> → <lvalueARRStmt>
+
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return(doRecursion(childNode, asTree));
@@ -736,53 +739,99 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 55)
     {
         //<moduleReuseStmt> → <optional> USE MODULE ID WITH PARAMETERS <actual_para_list> SEMICOL
-    
-    
+
+        // <moduleReuseStmt>.addr_syn = createNode(label:USE, <optional>.addr_syn, ID.addr, <actual_para_list>.addr_syn)
+
+        // CHECK
+
+        TREENODE childNode = getParseChild(parseTree, 0);
+        TREENODE childNode1 = getParseChild(parseTree, 3);
+        TREENODE childNode2 = getParseChild(parseTree, 6);
+
+        ASTNODE funCallN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        funCallN->tnt = 1;
+        funCallN->val.nt_val = funCallOp;
+
+        ASTNODE inputNode0 = doRecursion(childNode, NULL);
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL);
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL);
+
+        setASTChild(funCallN, inputNode0);
+        setASTChild(funCallN, inputNode1);
+        setASTChild(funCallN, inputNode2);
+
+        return funCallN;
     }
     else if( production_rule == 56)
     {
         //<factor> → NUM
-    
+
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);    
     
     }
     else if( production_rule == 57)
     {
         //<factor> → RNUM 
-    
-    
+        
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 58)
     {
         //<factor> → <boolVal>
     
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 59)
     {
         //<factor> → ID <factor2>
     
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 0);
+        ASTNODE idNode = doRecursion(childNode1, NULL);
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE idNode2 = doRecursion(childNode2, idNode);
+        return idNode2;
     }
     else if( production_rule == 60)
     {
         //<factor2> → SQBO <exprIndex> SQBC
-    
+
+        free(node);
+        TREENODE childNode = getParseChild(parseTree, 1);
+        ASTNODE inputNode0 = doRecursion(childNode, NULL);
+        ASTNODE exprIndexN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        exprIndexN->tnt = 1;
+        exprIndexN->val.nt_val = arrElement; // ASSIGNED A NEW CONSTRUCT
+        setASTChild(exprIndexN, asTree);
+        setASTChild(exprIndexN, inputNode0);
+        return exprIndexN;
     }
     else if( production_rule == 61)
     {
         //<factor2> → EPSILON
     
+        free(node);
+        return asTree;
     
     }
     else if( production_rule == 62)
     {
         //<optional> -> SQBO <idList> SQBC ASSIGNOP
     
-    
+        TREENODE childNode = getParseChild(parseTree, 1);
+        setASTChild(node, doRecursion(childNode, NULL));
     }
     else if( production_rule == 63)
     {
         //<optional> -> EPSILON
-    
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        setASTChild(node, doRecursion(childNode, NULL));
     }
     else if( production_rule == 64)
     {
@@ -895,8 +944,8 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         ASTNODE inputNode0 = doRecursion(childNode1, NULL);
         TREENODE childNode2 = getParseChild(parseTree, 1);
         ASTNODE inputNode1 = doRecursion(childNode2, inputNode0);
-        if(inputNode1 != NULL) setASTChild(inputNode0, inputNode1);
-        return inputNode0;
+        return inputNode1;
+
     }
     else if( production_rule == 75)
     {
@@ -905,24 +954,23 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode1 = getParseChild(parseTree, 0);  
         ASTNODE inputNode1 = doRecursion(childNode1, NULL); // logicalOp.addr_syn
 
-        TREENODE childNode2 = getParseChild(parseTree, 0);
+        TREENODE childNode2 = getParseChild(parseTree, 1);
         ASTNODE inputNode2 = doRecursion(childNode2, NULL); // AnyTerm.addr_syn
 
         ASTNODE logicalN = (ASTNODE) malloc(sizeof(struct ASTNode));
         logicalN->tnt = 1;
-        token t = childNode1->val.t_val;
+        token t = inputNode1->val.t_val;
         if(t == AND) logicalN->val.nt_val = ANDOp;
         else if(t == OR) logicalN->val.nt_val = OROp;
 
         setASTChild(logicalN, asTree);
         setASTChild(logicalN, inputNode2);
 
-        TREENODE childNode3 = getParseChild(parseTree, 0);
+        TREENODE childNode3 = getParseChild(parseTree, 2);
         ASTNODE inputNode3 = doRecursion(childNode3, logicalN); // Term7(2).addr_syn
 
         return inputNode3;
 
-    
     }
     else if( production_rule == 76)
     {
@@ -942,7 +990,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode1 = getParseChild(parseTree, 0);   
         ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <arithmeticExpr>.addr_syn
 
-        TREENODE childNode2 = getParseChild(parseTree, 0);  
+        TREENODE childNode2 = getParseChild(parseTree, 1);  
         ASTNODE inputNode2 = doRecursion(childNode2, inputNode1); // <Term8>.addr_syn
 
         return inputNode2;
@@ -966,12 +1014,12 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode1 = getParseChild(parseTree, 0);   
         ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <relationalOp>.addr_syn
 
-        TREENODE childNode2 = getParseChild(parseTree, 0);   
+        TREENODE childNode2 = getParseChild(parseTree, 1);   
         ASTNODE inputNode2 = doRecursion(childNode2, NULL); // <arithmeticExpr>.addr_syn
 
         ASTNODE relationalN = (ASTNODE) malloc(sizeof(struct ASTNode));
         relationalN->tnt = 1;
-        token t = childNode1->val.t_val;
+        token t = inputNode1->val.t_val;
         if(t == LT) relationalN->val.nt_val = LTOp;
         else if (t == LE) relationalN->val.nt_val = LEOp;
         else if(t == GT) relationalN->val.nt_val = GTOp;
@@ -987,6 +1035,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 80)
     {
         //<Term8> → EPSILON
+
         free(node);
         return asTree;
     
@@ -994,6 +1043,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 81)
     {
         //<con_var> → ID
+
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return convertToAST(childNode);
@@ -1002,6 +1052,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 82)
     {
         //<con_var> → NUM
+
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return convertToAST(childNode);
@@ -1010,6 +1061,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 83)
     {
         //<con_var> → RNUM
+
         TREENODE childNode = getParseChild(parseTree, 0);
         free(node);
         return convertToAST(childNode);
@@ -1018,128 +1070,266 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 84)
     {
         //<factor> → BO <abExpr> BC
-    
+
+        TREENODE childNode = getParseChild(parseTree, 1);
+        free(node);
+        return doRecursion(childNode, NULL);
     
     }
     else if( production_rule == 85)
     {
         //<arithmeticExpr> → <term><arithmeticExpr2>
-    
+
+        // <arithmeticExpr2>.addr_inh = <term>.addr_syn
+        // <arithmeticExpr>.addr_syn = <arithmeticExpr2>.addr_syn
+
+
+        TREENODE childNode1 = getParseChild(parseTree, 0);   
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <term>.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);  
+        ASTNODE inputNode2 = doRecursion(childNode2, inputNode1); // <arithmeticExpr2>.addr_syn
+
+        return inputNode2;
     
     }
     else if( production_rule == 86)
     {
         //<arithmeticExpr2> → <low_op><term><arithmeticExpr2>
-    
+
+        TREENODE childNode1 = getParseChild(parseTree, 0);  
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // low_op.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL); // term.addr_syn
+
+        ASTNODE lowOPN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        lowOPN->tnt = 1;
+        token t = inputNode1->val.t_val;
+        if(t == PLUS) lowOPN->val.nt_val = PLUSOp;
+        else if(t == MINUS) lowOPN->val.nt_val = MINUSOp;
+
+        setASTChild(lowOPN, asTree);
+        setASTChild(lowOPN, inputNode2);
+
+        TREENODE childNode3 = getParseChild(parseTree, 2);
+        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arithmeticExpr2(2).addr_syn
+
+        return inputNode3;
     
     }
     else if( production_rule == 87)
     {
         //<arithmeticExpr2> → EPSILON
-    
+
+        free(node);
+        return asTree;
     
     }
     else if( production_rule == 88)
     {
         //<term> → <factor><term2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 0);   
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <factor>.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);  
+        ASTNODE inputNode2 = doRecursion(childNode2, inputNode1); // <term2>.addr_syn
+
+        return inputNode2;
     }
     else if( production_rule == 89)
     {
         //<term2> -> <high_op><factor><term2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 0);  
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // high_op.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL); // factor.addr_syn
+
+        ASTNODE lowOPN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        lowOPN->tnt = 1;
+        token t = inputNode1->val.t_val;
+        if(t == MUL) lowOPN->val.nt_val = MULOp;
+        else if(t == DIV) lowOPN->val.nt_val = DIVOp;
+
+        setASTChild(lowOPN, asTree);
+        setASTChild(lowOPN, inputNode2);
+
+        TREENODE childNode3 = getParseChild(parseTree, 2);
+        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // term2(2).addr_syn
+
+        return inputNode3;
     }
     else if( production_rule == 90)
     {
         //<term2> → EPSILON
-    
+        
+        free(node);
+        return asTree;
     
     }
     else if( production_rule == 91)
     {
         //<exprIndex> → <sign> <exprIndex2>
     
-    
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 0);
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode0 = doRecursion(childNode1, NULL);
+        ASTNODE inputNode = doRecursion(childNode2, NULL);
+        ASTNODE signedNumN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        signedNumN->tnt = 1;
+        signedNumN->val.nt_val = signedNum; // ASSIGNED A NEW CONSTRUCT
+
+        setASTChild(signedNumN, inputNode0);
+        setASTChild(signedNumN, inputNode);
+        return signedNumN;
     }
     else if( production_rule == 92)
     {
         //<exprIndex> → <arrExpr>
-    
-    
+
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 93)
     {
         //<exprIndex2> → <num_or_id>
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 94)
     {
         //<exprIndex2> → BO <arrExpr> BC
     
-    
+        TREENODE childNode = getParseChild(parseTree, 1);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 95)
     {
         //<arrExpr> → <arrTerm> <arrExpr2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 0);   
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <arrTerm>.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);  
+        ASTNODE inputNode2 = doRecursion(childNode2, inputNode1); // <arrExpr2>.addr_syn
+
+        return inputNode2;
     }
     else if( production_rule == 96)
     {
         //<arrExpr2> → <low_op> <arrTerm> <arrExpr2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 0);  
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // low_op.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL); // arrTerm.addr_syn
+
+        ASTNODE lowOPN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        lowOPN->tnt = 1;
+        token t = inputNode1->val.t_val;
+        if(t == PLUS) lowOPN->val.nt_val = PLUSOp;
+        else if(t == MINUS) lowOPN->val.nt_val = MINUSOp;
+
+        setASTChild(lowOPN, asTree);
+        setASTChild(lowOPN, inputNode2);
+
+        TREENODE childNode3 = getParseChild(parseTree, 2);
+        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arrExpr2(2).addr_syn
+
+        return inputNode3;
     }
     else if( production_rule == 97)
     {
         //<arrExpr2> → EPSILON
-    
-    
+
+        free(node);
+        return asTree;
     }
     else if( production_rule == 98)
     {
         //<arrTerm> → <arrFactor> <arrTerm2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 0);   
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // <arrFactor>.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);  
+        ASTNODE inputNode2 = doRecursion(childNode2, inputNode1); // <arrTerm2>.addr_syn
+
+        return inputNode2;
     }
     else if( production_rule == 99)
     {
         //<arrTerm2> → <high_op> <arrFactor> <arrTerm2>
-    
+
+         TREENODE childNode1 = getParseChild(parseTree, 0);  
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL); // high_op.addr_syn
+
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL); // arrFactor.addr_syn
+
+        ASTNODE lowOPN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        lowOPN->tnt = 1;
+        token t = inputNode1->val.t_val;
+        if(t == MUL) lowOPN->val.nt_val = MULOp;
+        else if(t == DIV) lowOPN->val.nt_val = DIVOp;
+
+        setASTChild(lowOPN, asTree);
+        setASTChild(lowOPN, inputNode2);
+
+        TREENODE childNode3 = getParseChild(parseTree, 2);
+        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arrTerm2(2).addr_syn
+
+        return inputNode3;
     
     }
     else if( production_rule == 100)
     {
         //<arrTerm2> → EPSILON
     
-    
+        free(node);
+        return asTree;
     }
     else if( production_rule == 101)
     {
         //<arrFactor> → ID
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 102)
     {
         //<arrFactor> → NUM
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 103)
     {
         //<arrFactor> → <boolVal>
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0
+        );
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 104)
     {
         //<arrFactor> → BO <arrExpr> BC
     
-    
+        TREENODE childNode = getParseChild(parseTree, 1);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 105)
     {
@@ -1261,151 +1451,356 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     else if( production_rule == 118)
     {
         //<conditionalStmt> → SWITCH BO ID BC START <caseStmts><default_stmt> END
-    
-    
+
+        // <caseStmts>.addr_inh = NULL
+        // <conditionalStmt>.addr_syn = createNode(label:SWITCH, <caseStmts>.addr_syn, <default_stmt>.addr_syn, ID.addr)
+        
+        TREENODE childNode1 = getParseChild(parseTree, 2); // ID
+        TREENODE childNode2 = getParseChild(parseTree, 5); // <caseStmts>.addr_syn
+        TREENODE childNode3 = getParseChild(parseTree, 6); // <default_stmt>.addr_syn
+        
+        ASTNODE caseN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        caseN->tnt = 1;
+        caseN->val.nt_val = cases;
+        setASTChild(caseN, doRecursion(childNode2, NULL));
+        setASTChild(caseN, doRecursion(childNode3, NULL));
+
+
+        ASTNODE switchN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        switchN->tnt = 1;
+        switchN->val.nt_val = switchOp;
+        setASTChild(switchN, doRecursion(childNode1, NULL));
+        setASTChild(switchN, caseN);
+
+        return switchN;
     }
     else if( production_rule == 119)
     {
         //<caseStmts> → CASE <value> COLON <statements> BREAK SEMICOL <caseStmts2>
-    
-    
+
+
+        // <caseStmts2>.addr_inh = insertAtLast(<caseStmts>.addr_inh, <caseStmts>.addr)
+        // <caseStmts>.addr = createNode(label:CASE, <value>.addr_syn, <statements>.addr_syn)
+        // <caseStmts>.addr_syn = <caseStmts2>.addr_syn
+
+        TREENODE childNode1 = getParseChild(parseTree, 1); // <value>.addr_syn
+        TREENODE childNode2 = getParseChild(parseTree, 3); // <statements>.addr_syn
+        TREENODE childNode3 = getParseChild(parseTree, 6); // <caseStmts2>.addr_syn
+        
+        ASTNODE caseN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        caseN->tnt = 1;
+        caseN->val.nt_val = case1;
+        setASTChild(caseN, doRecursion(childNode1, NULL));
+        setASTChild(caseN, doRecursion(childNode2, NULL));
+
+
+        ASTNODE caseTemp = doRecursion(childNode3, caseN);
+        if(caseTemp != NULL) setASTChild(caseN, caseTemp);
+        return caseN;
+
     }
     else if( production_rule == 120)
     {
         //<caseStmts2> → CASE <value> COLON <statements> BREAK SEMICOL <caseStmts2>
     
-    
+        TREENODE childNode1 = getParseChild(parseTree, 1); // <value>.addr_syn
+        TREENODE childNode2 = getParseChild(parseTree, 3); // <statements>.addr_syn
+        TREENODE childNode3 = getParseChild(parseTree, 6); // <caseStmts2>.addr_syn
+        
+        ASTNODE caseN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        caseN->tnt = 1;
+        caseN->val.nt_val = case1;
+        setASTChild(caseN, doRecursion(childNode1, NULL));
+        setASTChild(caseN, doRecursion(childNode2, NULL));
+
+
+        ASTNODE caseTemp = doRecursion(childNode3, caseN);
+        if(caseTemp != NULL) setASTChild(caseN, caseTemp);
+        return caseN;
     }
     else if( production_rule == 121)
     {
         //<caseStmts2> → EPSILON
-    
+        free(node);
+        return NULL;
     
     }
     else if( production_rule == 122)
     {
         //<value> → NUM
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 123)
     {
         //<value> → TRUE
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 124)
     {
         //<value> → FALSE
-    
-    
+
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 125)
     {
         //<default_stmt> → DEFAULT COLON <statements> BREAK SEMICOL
-    
-    
+
+        TREENODE childNode = getParseChild(parseTree, 2);
+        free(node);
+        return doRecursion(childNode, NULL);
+
     }
     else if( production_rule == 126)
     {
         //<default_stmt> → EPSILON 
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        setASTChild(node, convertToAST(childNode));
     
     }
     else if( production_rule == 127)
     {
         //<iterativeStmt> → FOR BO ID IN <for_range> BC START <statements> END
-    
-    
+        
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 2);
+        TREENODE childNode2 = getParseChild(parseTree, 4);
+        TREENODE childNode3 = getParseChild(parseTree, 7);
+
+        ASTNODE inputNode0 =  doRecursion(childNode1, NULL); // ID
+        ASTNODE inputNode1 =  doRecursion(childNode2, NULL); // <for_range>.addr_syn
+        ASTNODE inputNode2 =  doRecursion(childNode3, NULL); // <statements>.addr_syn
+
+        ASTNODE forIDnRangeN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        forIDnRangeN->tnt = 1;
+        forIDnRangeN->val.nt_val = forIDnRangeOp;
+
+        setASTChild(forIDnRangeN, inputNode0);
+        setASTChild(forIDnRangeN, inputNode1);
+
+        ASTNODE forN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        forN->tnt = 1;
+        forN->val.nt_val = forOp;
+
+        setASTChild(forN, forIDnRangeN);
+        setASTChild(forN, inputNode2);
+
+        return forN;
     }
     else if( production_rule == 128)
     {
         //<iterativeStmt> → WHILE BO <abExpr> BC START <statements> END
     
-    
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 2);
+        TREENODE childNode2 = getParseChild(parseTree, 5);
+
+        ASTNODE inputNode0 =  doRecursion(childNode1, NULL); // <abExpr>.addr_syn
+        ASTNODE inputNode1 =  doRecursion(childNode2, NULL); // <statements>.addr_syn
+
+        ASTNODE whileN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        whileN->tnt = 1;
+        whileN->val.nt_val = whileOp;
+
+        setASTChild(whileN, inputNode0);
+        setASTChild(whileN, inputNode1);
+
+        return whileN;
     }
     else if( production_rule == 129)
     {
         //<for_range> → <for_index> RANGEOP <for_index>
     
-    
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 0);
+        TREENODE childNode2 = getParseChild(parseTree, 2);
+        ASTNODE inputNode0 = doRecursion(childNode1, NULL);
+        ASTNODE inputNode = doRecursion(childNode2, NULL);
+        ASTNODE arrayTypeN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        arrayTypeN->tnt = 1;
+        arrayTypeN->val.nt_val = arrRangeType; // ASSIGNED A NEW CONSTRUCT
+
+        setASTChild(arrayTypeN, inputNode0);
+        setASTChild(arrayTypeN, inputNode);
+        return arrayTypeN;
     }
     else if( production_rule == 130)
     {
         //<for_index> → <for_sign> <for_index2>
     
-    
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 0);
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE inputNode0 = doRecursion(childNode1, NULL);
+        ASTNODE inputNode = doRecursion(childNode2, NULL);
+        ASTNODE signedNumN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        signedNumN->tnt = 1;
+        signedNumN->val.nt_val = signedNum; // ASSIGNED A NEW CONSTRUCT
+
+        setASTChild(signedNumN, inputNode0);
+        setASTChild(signedNumN, inputNode);
+        return signedNumN;
     }
     else if( production_rule == 131)
     {
         //<for_index2> → NUM
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 132)
     {
         //<for_sign> → PLUS
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 133)
     {
         //<for_sign> → MINUS
     
-    
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 134)
     {
         //<for_sign> → EPSILON
 
-
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 135)
     {
         //<actual_para_list> → <sign> <K> <Term9>
-    
+
+        // <K>.addr_inh = <sign>.addr_syn
+        // <Term9>.addr_inh = <K>.addr_syn
+        // <actual_para_list>.addr_syn = insertAtLast(<Term9>.addr_syn, createNode(label:signed_num, <sign>.addr_syn, <K>.addr_syn))
+        
+        free(node);
+        TREENODE childNode = getParseChild(parseTree, 0); // <sign>.addr_syn
+        TREENODE childNode1 = getParseChild(parseTree, 1); // <K>.addr_syn
+        TREENODE childNode2 = getParseChild(parseTree, 2); // <Term9>.addr_syn
+
+        ASTNODE inputNode0 = doRecursion(childNode, NULL);
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL);
+
+        ASTNODE signedNumN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        signedNumN->tnt = 1;
+        signedNumN->val.nt_val = signedNum; // ASSIGNED A NEW CONSTRUCT
+
+        setASTChild(signedNumN, inputNode0);
+        setASTChild(signedNumN, inputNode1);
+
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL);
+        if(inputNode2 != NULL) setASTChild(signedNumN, inputNode2);
+
+        return signedNumN;
+
     }
     else if( production_rule == 136)
     {
         //<Term9> → COMMA <sign> <K> <Term9>
     
+        // <K>.addr_inh = <sign>.addr_syn
+        // <Term92>.addr_inh = <Term91>.addr_inh
+
+        // Bottom Up:
+        // <Term91>.addr_syn = insertAtLast(<Term92>.addr_syn, createNode(label:signed_num, <K>.addr_syn, <sign>.addr_syn))
+
+        free(node);
+        TREENODE childNode = getParseChild(parseTree, 1); // <sign>.addr_syn
+        TREENODE childNode1 = getParseChild(parseTree, 2); // <K>.addr_syn
+        TREENODE childNode2 = getParseChild(parseTree, 3); // <Term9>(2).addr_syn
+
+        ASTNODE inputNode0 = doRecursion(childNode, NULL);
+        ASTNODE inputNode1 = doRecursion(childNode1, NULL);
+
+        ASTNODE signedNumN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        signedNumN->tnt = 1;
+        signedNumN->val.nt_val = signedNum; // ASSIGNED A NEW CONSTRUCT
+
+        setASTChild(signedNumN, inputNode0);
+        setASTChild(signedNumN, inputNode1);
+
+        ASTNODE inputNode2 = doRecursion(childNode2, NULL);
+        if(inputNode2 != NULL) setASTChild(signedNumN, inputNode2);
+
+        return signedNumN;
     }
     else if( production_rule == 137)
     {
         //<Term9> → EPSILON
-    
+        free(node);
+        return asTree;
     }
     else if( production_rule == 138)
     {
         //<K> → NUM
     
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 139)
     {
         //<K> → RNUM
     
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return convertToAST(childNode);
     }
     else if( production_rule == 140)
     {
         //<K> → <boolVal>
     
+        TREENODE childNode = getParseChild(parseTree, 0);
+        free(node);
+        return doRecursion(childNode, NULL);
     }
     else if( production_rule == 141)
     {
         //<K> → ID <actual_para_list2>
-    
+
+        free(node);
+        TREENODE childNode1 = getParseChild(parseTree, 0);
+        ASTNODE idNode = doRecursion(childNode1, NULL);
+        TREENODE childNode2 = getParseChild(parseTree, 1);
+        ASTNODE idNode2 = doRecursion(childNode2, idNode);
+        return idNode2;
     }
     else if( production_rule == 142)
     {
         //<actual_para_list2> → SQBO <exprIndex> SQBC
+
+        free(node);
+        TREENODE childNode = getParseChild(parseTree, 1);
+        ASTNODE inputNode0 = doRecursion(childNode, NULL);
+        ASTNODE whichIDN = (ASTNODE) malloc(sizeof(struct ASTNode));
+        whichIDN->tnt = 1;
+        whichIDN->val.nt_val = arrElement; // ASSIGNED A NEW CONSTRUCT
+        setASTChild(whichIDN, asTree);
+        setASTChild(whichIDN, inputNode0);
+        return whichIDN;
     
     }
     else if( production_rule == 143)
     {
         //<actual_para_list2> → EPSILON
-    
+
+        free(node);
+        return asTree;
     }
     return node;
 }
-
-
