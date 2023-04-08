@@ -1,5 +1,8 @@
 declare module mod1;
 <<<driver program>>>
 start
-    w:= true and true or false;
+    while(true)
+    start
+        [a, b, c] := use module mod1 with parameters +5, true;
+    end
 end

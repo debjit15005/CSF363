@@ -61,6 +61,11 @@ void initTable(Htable htable){
     insertId(htable,"break", BREAK, -1);
     insertId(htable,"default", DEFAULT, -1);
     insertId(htable,"while", WHILE, -1);
+    insertId(htable,"true", TRUE, -1);
+    insertId(htable,"false", FALSE, -1);
+    insertId(htable,"AND", AND, -1);
+    insertId(htable,"OR", OR, -1);
+
 }
 
 token getToken(char *lexeme, Htable htable){

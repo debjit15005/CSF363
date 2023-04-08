@@ -102,7 +102,18 @@ typedef enum {
 	GTOp,
 	GEOp,
 	EQOp,
-	NEOp
+	NEOp,
+	PLUSOp,
+	MINUSOp,
+	MULOp,
+	DIVOp,
+	cases,
+	switchOp,
+	case1,
+	forIDnRangeOp,
+	forOp,
+	whileOp,
+	funCallOp
 } NT;
 
 #endif
