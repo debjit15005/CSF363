@@ -231,25 +231,36 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                 else{
                     if(readToken->token == ENDOFFILE){
                         printf("ERROR: Input consumed but Stack not empty\n\n\n");
+                        printStack(mainStack);
                         while(reachEnd(mainStack)==1 && top(mainStack)->val.t_val != ENDOFFILE ){
                             pop(mainStack);
                         }
+                        sync_flag = 1;
                     }
                     else{
-                        printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
-                        printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
+                        
+                        sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
 
-                        sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
-                        printf("%d \n", sync_flag);
-                        readToken = runLexerForParser(testcaseFile,10);
+                        if(sync_flag == 0){
+                            printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
+                            printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
+                            sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
+                            readToken = runLexerForParser(testcaseFile,10);
+
+                        }
+                        else{
+                            push(mainStack,temp);
+                        }
+                        // printf("%d \n", sync_flag);
                     }
 
                 }
             }
-            while(0);
+            while(sync_flag == 0);
         }
         else{
             printf("ERROR: Stack emptied before input consumed\n");
+            
         }
     }
     printf("\n");

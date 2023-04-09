@@ -10,7 +10,7 @@
 #include "Nlinkedlist.h"
 #include "hashtable.h"
 
-char** reqLexeme;
+//char** reqLexeme;
 int currIndex = 0;
 
 ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
