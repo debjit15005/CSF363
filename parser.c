@@ -268,6 +268,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
     // printf("\n***********************************\n");
     ASTNODE temp = createAST(t1, reqLexeme);
+    freeTree(t1);
 	printAST(temp, 0);
 }
 

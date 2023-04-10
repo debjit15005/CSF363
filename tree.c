@@ -143,4 +143,17 @@ void runTree(void)
     // printTree(t1, 0);
 }
 
-
+void freeTree(TREENODE node)
+{
+    if(node->tnt == 0) free(node);
+    else {
+        if (node->firstChild != NULL){
+            freeTree(node->firstChild);
+        }
+        if(node->nextSibling != NULL){
+            freeTree(node->nextSibling);
+        }
+        free(node);
+    } 
+    
+}
