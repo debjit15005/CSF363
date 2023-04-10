@@ -20,12 +20,33 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 
 // TODO: ADD LINE NUMBER TO ERRORS
 // TODO: CHECK IF LHS OF RANGE <= RHS OF RANGE FOR ANY TYPE OF RANGE CONSTRUCT
+// TODO: SHOULD NOT BE ABLE TO ASSIGN CONDITION VARIABLE OF FOR LOOP ( DONE )
+// TODO: WIDTH AND OFFSET CHECKING FOR DYNAMIC ARRAYS
+
 
 GlobalSymTable gSymTable[MODULO]; // Creating a global symbol table with 'MODULO' entries
 
 ASTNODE searchFor(ASTNODE asTree, NT key);
 void printLocalTables(SYMTABLE htable);
 RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroffset);
+
+void setSYMTABLEChild(SYMTABLE currTable, SYMTABLE childNode)
+{
+    childNode->parent = currTable;
+    if(currTable->firstChild == NULL)
+    {
+        currTable->firstChild = childNode;
+    }
+    else
+    {
+        currTable = currTable->firstChild;
+        while(currTable->nextSibling != NULL)
+        {
+            currTable = currTable->nextSibling;
+        }
+        currTable->nextSibling = childNode;
+    }
+}
 
 void initSymTable()
 {
@@ -98,7 +119,6 @@ SymTableEntry getEntryFromTable(char* key, SYMTABLE htable)
 		hashed = (++hashed) % MODULO;
         e1 = htable->entries[hashed];
 	}
-    printf("\033[0;31mERROR VARIABLE %s NOT DECLARED \033[0m \n", key);
     return e1;
 }
 
@@ -160,11 +180,18 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         if(asTree->val.t_val == ID)
         {
             SymTableEntry e1 = getEntryFromTable(asTree->lexeme, currTable);
-            // printf("%s\n", asTree->lexeme);
-            if(strcmp(e1.lexeme, asTree->lexeme) == 0) // TODO: ADD CHECKING IN PARENT TABLE IF NOT FOUND IN CURRENT TABLE
+            SYMTABLE recurseTable = currTable;
+            // printf("%s here %s\n", e1.lexeme, asTree->lexeme);
+            while(recurseTable != NULL && (e1.valid != 1 || strcmp(asTree->lexeme, e1.lexeme) != 0))
+            {
+                recurseTable = recurseTable->parent;
+                if(recurseTable != NULL) e1 = getEntryFromTable(asTree->lexeme, recurseTable);
+            }
+            if(recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0) // TODO: ADD CHECKING IN PARENT TABLE IF NOT FOUND IN CURRENT TABLE (DONE)
             {
                 node->type = e1.type;
                 node->isArray = e1.isArray;
+                node->isFor = e1.isFor;
                 if(e1.isArray == 1)
                 {
                     node->isStatic = e1.isStatic;
@@ -172,9 +199,13 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                     strcpy(node->r2,e1.r2);
                 }
             } 
-            else node->type = -1;
-            return node;
+            else
+            {
+                printf("\033[0;31mERROR VARIABLE %s NOT DECLARED \033[0m \n", asTree->lexeme);
+                node->type = -1;
+            } 
         }
+        return node;
     }
     
     ASTNODE currNode = asTree;
@@ -269,6 +300,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                 printf("ERROR Type Mismatch\n"); // If LHS and RHS are not of same type / same array type
                 node->type = -1;
             }
+            else if(type1->isFor == 1)
+            {
+                printf("\033[0;31mCannot reassign for loop variable \033[0m \n\n"); // If LHS and RHS are not of same type / same array type
+                node->type = -1;
+            }
             else if((type1->isArray ^ type2->isArray == 1) && (child1->val.nt_val != arrElement && child2->val.nt_val != arrElement ))
             {
                 printf("ERROR Type Mismatch\n"); // If of the form A := B where A is integer and B is Array of integer
@@ -361,6 +397,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
     {
         RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), currTable, current_offset);
         if(type2->type == -1) node->type = -1;
+        else node->type = type2->type;
     }
     else if(currNT == ANDOp || currNT == OROp)
     {   
@@ -384,14 +421,14 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         if(type1->type == -1 || type2->type == -1) node->type = -1;
         if(type1->type != type2->type)
         {
-            printf("\033[0;31m Type Mismatch \033[0m \n");
+            printf("\033[0;31mType Mismatch \033[0m \n");
             node->type = -1;
         }
         else
         {
             if((currNT == LTOp || currNT == LEOp || currNT == GTOp || currNT == GEOp)&&(type1->type == BOOLEAN))
             {
-                printf("\033[0;31m Cannot compare boolean operands \033[0m \n");
+                printf("\033[0;31mCannot compare boolean operands \033[0m \n");
                 node->type = -1;
             }
         }
@@ -402,20 +439,27 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         SYMTABLE childTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
         for(int i = 0; i<MODULO; i++) childTable->entries[i].valid = 0;
         childTable->nesting = currTable->nesting+1;
-        childTable->parent = currTable;
+        setSYMTABLEChild(currTable, childTable);
+        strcpy(childTable->moduleName, currTable->moduleName);
 
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0)->firstChild, currTable, current_offset);
-        if(type1 == -1) node->type = -1;
+        if(type1->type == -1 || type1->type != INTEGER)
+        {
+            if(type1->type != -1) printf("\033[0;31mFor loop variable must be integer \033[0m \n");
+            node->type = -1;
+        } 
         else
         {
-
+            currTable->entries[hashcode(getASTChild(asTree, 0)->firstChild->lexeme)].isFor = 1;
             populateChildTable(getASTChild(asTree, 1), childTable, 0); // USE THIS TO RECURSIVELY CREATE TREE OF HASHTABLES
         }
         
-
-
         populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the FOR block is done
     }
+    // else if(currNT == )
+    // {
+
+    // }
     return node; 
 }
 

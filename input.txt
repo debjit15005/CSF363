@@ -1,18 +1,20 @@
-declare module mod1;
-declare module mod2;
-
 <<module compute>>
-takes input[a:integer, b:integer, s: real, c:integer];
-returns [res_1:boolean, res_2_a:integer, res_2__b:real];
+takes input[a:integer];
+returns [res_1:boolean];
 start
 	declare x: integer;
-	declare y: integer;
-	for(x in -1..5)
-	start
-		y := 3;
-		z := 2;
-	end
-	x:= 3;
+	switch(x)
+		start
+			case 10: 
+				declare A:real;
+				break;
+			case 20:
+				declare A:real;
+				break;
+			default:
+				declare B:boolean;	      **not an error**	
+				break;			 	
+		end
 end	
 
 

@@ -23,6 +23,8 @@ typedef struct {
     int scope[2]; // scope line
     // char scopeName[MAX_LEXEME]; 
     char lexeme[MAX_LEXEME]; // variable name
+    int isFor; // If it is a for loop variable
+
 } SymTableEntry;
 
 struct SymTable{
@@ -58,6 +60,7 @@ struct recurseStruct {
     token type; // type of element
     int scope[2]; // scope line
     int numval; // numeric value if any
+    int isFor; // If it is a for loop variable
 };
 
 typedef struct recurseStruct* RECURSESTRUCT;

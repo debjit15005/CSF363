@@ -21,13 +21,15 @@ int currIndex = 0;
 
 ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
 {
+    
     reqLexeme = receivedLexeme;
+    // for(int i = 0; i<10; i++) printf("%s\n", reqLexeme[i]);
     ASTNODE asTree = doRecursion(parseTree, NULL);
     free(reqLexeme);
     return asTree;
 }
 
-void setASTChild(ASTNODE asTree, ASTNODE childNode) // child_count is 0-indexed
+void setASTChild(ASTNODE asTree, ASTNODE childNode)
 {
     childNode->parent = asTree;
     if(asTree->firstChild == NULL)
@@ -130,6 +132,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         {
             node->lexeme = (char *) malloc(MAX_LEXEME);
             strcpy(node->lexeme, reqLexeme[currIndex++]);
+            printf("%s\n", node->lexeme);
         }
     } 
     else node->val.nt_val = parseTree->val.nt_val;
