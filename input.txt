@@ -1,8 +1,24 @@
 declare module mod1;
+declare module mod2;
+
+<<module compute>>
+takes input[a:integer, b:integer, s: real, c:integer];
+returns [res_1:boolean, res_2_a:integer, res_2__b:real];
+start
+	declare x: integer;
+	declare y: integer;
+	for(x in -1..5)
+	start
+		y := 3;
+		z := 2;
+	end
+	x:= 3;
+end	
+
+
 <<<driver program>>>
 start
-    while(true)
-    start
-        [a, b, c] := use module mod1 with parameters 17.1, f, true;
-    end
+	declare v_1_2_3:integer;	**ERROR: variable u1 is re-declared**
 end
+
+

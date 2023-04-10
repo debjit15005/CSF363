@@ -9,6 +9,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #define PARSER_H
 #include "lexerDef.h"
 #include "linkedlist.h"
+#include "ast.h"
 
 void automaticFirsts();
 void automaticFollows();
@@ -16,7 +17,7 @@ void computeFirsts();
 void computeFollows();
 
 void createParseTable();
-void parseInputSourceCode();
+ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable);
 void printFirsts(void);
 void printFollows(void);
 void printParseTable();
