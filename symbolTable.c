@@ -22,7 +22,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 // TODO: CHECK IF LHS OF RANGE <= RHS OF RANGE FOR ANY TYPE OF RANGE CONSTRUCT
 // TODO: SHOULD NOT BE ABLE TO ASSIGN CONDITION VARIABLE OF FOR LOOP ( DONE )
 // TODO: WIDTH AND OFFSET CHECKING FOR DYNAMIC ARRAYS
-
+// TODO: In case statements, check if one case is wrong should we continue with the rest
 
 GlobalSymTable gSymTable[MODULO]; // Creating a global symbol table with 'MODULO' entries
 
@@ -421,14 +421,14 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         if(type1->type == -1 || type2->type == -1) node->type = -1;
         if(type1->type != type2->type)
         {
-            printf("\033[0;31mType Mismatch \033[0m \n");
+            printf("\033[0;31mERROR Type Mismatch \033[0m \n");
             node->type = -1;
         }
         else
         {
             if((currNT == LTOp || currNT == LEOp || currNT == GTOp || currNT == GEOp)&&(type1->type == BOOLEAN))
             {
-                printf("\033[0;31mCannot compare boolean operands \033[0m \n");
+                printf("\033[0;31mERROR Cannot compare boolean operands \033[0m \n");
                 node->type = -1;
             }
         }
@@ -445,7 +445,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0)->firstChild, currTable, current_offset);
         if(type1->type == -1 || type1->type != INTEGER)
         {
-            if(type1->type != -1) printf("\033[0;31mFor loop variable must be integer \033[0m \n");
+            if(type1->type != -1) printf("\033[0;31mERROR For loop variable must be integer \033[0m \n");
             node->type = -1;
         } 
         else
@@ -456,10 +456,68 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         
         populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the FOR block is done
     }
-    // else if(currNT == )
-    // {
+    else if(currNT == switchOp)
+    {
+        ASTNODE childNode = getASTChild(asTree, 0); // ID
+        RECURSESTRUCT type1 = populateChildTable(childNode, currTable, current_offset);
 
-    // }
+        if(type1->type == -1) node->type = -1;
+        else
+        {
+            if((type1->isArray == 1 && childNode->val.nt_val != arrElement)||(type1->type == REAL))
+            {
+                printf("\033[0;31mERROR invalid switch variable\033[0m \n");
+                node->type = -1;
+            }
+            else if(type1->type == BOOLEAN || type1->type == INTEGER)
+            {
+                ASTNODE caseNode = getASTChild(asTree, 1)->firstChild; // CONSTRUCT: case
+                ASTNODE caseIter = caseNode;
+                while(caseIter != NULL)
+                {
+                    token switchVal = getASTChild(caseIter, 0)->val.t_val;
+                    if(switchVal != NUM)
+                    {
+                        printf("\033[0;31mERROR case statement value doesn't match type\033[0m \n");
+                    node->type = -1;
+                    }
+
+                    // MALLOC A NEW SYM TABLE, INITIALISE PARENT, CHILD, NESTING AND VALID 
+                    SYMTABLE childTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
+                    for(int i = 0; i<MODULO; i++) childTable->entries[i].valid = 0;
+                    childTable->nesting = currTable->nesting+1;
+                    setSYMTABLEChild(currTable, childTable);
+                    strcpy(childTable->moduleName, currTable->moduleName);
+                    populateChildTable(getASTChild(caseIter, 1), childTable, current_offset);
+                    caseIter = getASTChild(caseIter, 2);
+                }
+                if(type1->type == INTEGER && caseNode->nextSibling->firstChild->val.t_val == EPSILON) // no default statement
+                {
+                    printf("\033[0;31mERROR default statement required\033[0m \n");
+                    node->type = -1;
+                }
+                else if(type1->type == BOOLEAN && caseNode->nextSibling->firstChild->val.t_val != EPSILON)
+                {
+                    printf("\033[0;31mERROR default statement not required\033[0m \n");
+                    node->type = -1;
+                }
+                else // default statement
+                {
+                    SYMTABLE childTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
+                    for(int i = 0; i<MODULO; i++) childTable->entries[i].valid = 0;
+                    childTable->nesting = currTable->nesting+1;
+                    setSYMTABLEChild(currTable, childTable);
+                    strcpy(childTable->moduleName, currTable->moduleName);
+                    populateChildTable(caseNode->nextSibling, childTable, current_offset);
+                } 
+            }
+        }
+        populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the SWITCH block is done
+    }
+    else if(currNT == whileOp)
+    {
+        
+    }
     return node; 
 }
 

@@ -2,7 +2,7 @@
 takes input[a:integer];
 returns [res_1:boolean];
 start
-	declare x: integer;
+	declare x: boolean;
 	switch(x)
 		start
 			case 10: 
@@ -10,11 +10,9 @@ start
 				break;
 			case 20:
 				declare A:real;
-				break;
-			default:
-				declare B:boolean;	      **not an error**	
-				break;			 	
+				break;	 	
 		end
+	declare z: integer;
 end	
 
 

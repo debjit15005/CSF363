@@ -132,7 +132,6 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         {
             node->lexeme = (char *) malloc(MAX_LEXEME);
             strcpy(node->lexeme, reqLexeme[currIndex++]);
-            printf("%s\n", node->lexeme);
         }
     } 
     else node->val.nt_val = parseTree->val.nt_val;
@@ -1479,7 +1478,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode1 = getParseChild(parseTree, 2); // ID
         TREENODE childNode2 = getParseChild(parseTree, 5); // <caseStmts>.addr_syn
         TREENODE childNode3 = getParseChild(parseTree, 6); // <default_stmt>.addr_syn
-        
+        ASTNODE idN = doRecursion(childNode1, NULL);
         ASTNODE caseN = (ASTNODE) malloc(sizeof(struct ASTNode));
         caseN->tnt = 1;
         caseN->val.nt_val = cases;
@@ -1490,7 +1489,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         ASTNODE switchN = (ASTNODE) malloc(sizeof(struct ASTNode));
         switchN->tnt = 1;
         switchN->val.nt_val = switchOp;
-        setASTChild(switchN, doRecursion(childNode1, NULL));
+        setASTChild(switchN, idN);
         setASTChild(switchN, caseN);
 
         return switchN;
