@@ -146,5 +146,6 @@ int findTermInSet(token term, NODE node){
         if(node->val.t_val==term) return 1;
         node = node->next;
     }
+    if(node->val.t_val == term) return 1;
     return 0;
 }
