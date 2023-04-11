@@ -102,7 +102,7 @@ void printTree(TREENODE node, int level)
 {
     while (node != NULL)
     {
-        for (int i = 0; i < level; i++) printf("\t");
+        for (int i = 0; i < level; i++) printf("  ");
         printf("Level %d Node -> ", level);
         if(node->tnt == 0) printT(node->val.t_val);
         else 
@@ -114,7 +114,7 @@ void printTree(TREENODE node, int level)
 
         if (node->firstChild != NULL)
         {
-            for (int i = 0; i < level; i++) printf("\t");
+            for (int i = 0; i < level; i++) printf("  ");
             printf("Children: \n");
             printTree(node->firstChild, level + 1);
         }
