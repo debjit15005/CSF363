@@ -1,29 +1,17 @@
-declare module readArr;
-**the following function computes the sum of first n elements of the array**
-<<module arraySum>>
-takes input[list:array[1..15] of    real, n:integer];
-returns  [sum:real];
+<<module compute>>
+takes input [x:integer, x: boolean, p:real];
+returns [m:integer, n:integer, u: boolean];
 start
-	declare index:integer;
-	declare t:boolean;
-	sum:=0.0;
-	for(index in  -10..+15)
+	declare x: boolean;
+	declare y: integer;
+	while(x OR y>=3)
 	start
-		t:= index<=n;
-		switch(t)
-		start
-			case true: print(list[+index]);
-				   sum:=sum+list[index];
-				   break;
-			case false: print(sum);
-				    print(index);
-				    **prints the values of sum and index  15-n times**
-				    break;
-		end
-		** no need to increment the value of index as it will be taken care by the semantic rules associated with for construct, but an increment statement does not make its syntax incorrect**
+		x := true;
 	end
-	print(sum);
-end
+	declare z: integer;
+end	
+
+
 <<<driver program>>>
 start
 	declare A:array[1..15] of real;

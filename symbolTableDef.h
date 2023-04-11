@@ -24,6 +24,8 @@ typedef struct {
     // char scopeName[MAX_LEXEME]; 
     char lexeme[MAX_LEXEME]; // variable name
     int isFor; // If it is a for loop variable
+    int isWhile; // If it is a while loop variable
+    int changed; // If the while loop variable changed
 
 } SymTableEntry;
 
@@ -43,8 +45,8 @@ typedef struct {
     SYMTABLE firstChild;
     int valid;
     char lexeme[MAX_LEXEME]; // module name
-    TREENODE ip_list; /* CHECK IF THESE ARE NEEDED */
-    TREENODE op_list; /* CHECK IF THESE ARE NEEDED */
+    SYMTABLE ip_list; /* CHECK IF THESE ARE NEEDED */
+    SYMTABLE op_list; /* CHECK IF THESE ARE NEEDED */
 } GlobalSymTable;
 
 typedef GlobalSymTable* GLOBALSYMTABLE;
@@ -61,6 +63,8 @@ struct recurseStruct {
     int scope[2]; // scope line
     int numval; // numeric value if any
     int isFor; // If it is a for loop variable
+    int isWhile; // If it is a while loop variable
+    int changed; // If the while loop variable changed
 };
 
 typedef struct recurseStruct* RECURSESTRUCT;
