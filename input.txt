@@ -1,17 +1,13 @@
 <<module compute>>
-takes input[a:integer];
-returns [res_1:boolean];
+takes input [x:integer, x: boolean, p:real];
+returns [m:integer, n:integer, u: boolean];
 start
 	declare x: boolean;
-	switch(x)
-		start
-			case 10: 
-				declare A:real;
-				break;
-			case 20:
-				declare A:real;
-				break;	 	
-		end
+	declare y: integer;
+	while(x OR y>=3)
+	start
+		x := true;
+	end
 	declare z: integer;
 end	
 
