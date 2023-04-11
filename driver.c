@@ -26,5 +26,6 @@ int main(){
 	initSymTable();
 	createSymTable(asTree);
 	printGlobalTable(gSymTable);
+
 	return 0; 
 }

@@ -12,5 +12,6 @@ TREENODE createEmptyNode();
 void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no);
 void runTree(void);
 void printTree(TREENODE t1, int level);
+void freeTree(TREENODE node);
 
 #endif
