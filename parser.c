@@ -115,10 +115,10 @@ void printParseTable(){
     }
 }
 
-void parseInputSourceCode(char *testcaseFile, int** parseTable){
+ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     int rule_no = 0;
     
-    tokenInfo * readToken = runLexerForParser("input.txt", 10);
+    tokenInfo * readToken = runLexerForParser(testcaseFile, 10);
     // readToken = runLexerForParser(testcaseFile,10);
     
     Stack* mainStack = newStack(); 
@@ -144,7 +144,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     if(readToken->token == ENDOFFILE)
     {
         printf("File is empty\n");
-        return;
+        return NULL;
     }
     while(reachEnd(mainStack))
     {   
@@ -247,11 +247,18 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
                             sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
                             readToken = runLexerForParser(testcaseFile,10);
 
+
+                        sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
+                        if(sync_flag == 0)
+                        {
+                            sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
+                            readToken = runLexerForParser(testcaseFile,10);
                         }
-                        else{
-                            push(mainStack,temp);
+                        else
+                        {
+                            push(mainStack, temp);
                         }
-                        // printf("%d \n", sync_flag);
+
                     }
 
                 }
@@ -269,7 +276,7 @@ void parseInputSourceCode(char *testcaseFile, int** parseTable){
     // printf("\n***********************************\n");
     ASTNODE temp = createAST(t1, reqLexeme);
     freeTree(t1);
-	printAST(temp, 0);
+	  printAST(temp, 0);
 }
 
 void automaticFirsts()

@@ -9,24 +9,16 @@
 #include "Nlinkedlist.h"
 #include "hashtable.h"
 #include "ast.h"
+#include "symbolTable.h"
 
 int main(){
 	initializeLexerOnce();
 	buildGrammar();
 	automaticFirsts();
 	// printFirsts();
-	// printf("***********************************************\n");
-	// computeFirsts();
-	// // printf("Firsts done\n");
-	// printFirsts();
-	// printf("***********************************************\n");
 	automaticFollows();
-	// computeFollows();
-	// // printf("Follows done\n");
+	// printf("\n");
 	// printFollows();
-	// printf("***********************************************\n");
-	
-
 	createParseTable();
 	int** parseTable = getParseTable();
 	// printf("ParseTable done\n");
@@ -44,5 +36,6 @@ int main(){
 	// runLexer("input.txt",10);
 	// runGrammar();
 	
+
 	return 0; 
 }

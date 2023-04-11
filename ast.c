@@ -1,3 +1,9 @@
+/*
+Group No. : 42
+ID: 2020A7PS1214P	Name: Darshan Abhaykumar
+ID: 2020A7PS0970P	Name: Debjit Kar
+ID:2020A7PS0986P	Name: Nidhish Parekh
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include "lexer.h"
@@ -15,13 +21,15 @@ int currIndex = 0;
 
 ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
 {
+    
     reqLexeme = receivedLexeme;
+    // for(int i = 0; i<10; i++) printf("%s\n", reqLexeme[i]);
     ASTNODE asTree = doRecursion(parseTree, NULL);
     free(reqLexeme);
     return asTree;
 }
 
-void setASTChild(ASTNODE asTree, ASTNODE childNode) // child_count is 0-indexed
+void setASTChild(ASTNODE asTree, ASTNODE childNode)
 {
     childNode->parent = asTree;
     if(asTree->firstChild == NULL)
@@ -85,7 +93,7 @@ void printAST(ASTNODE node, int level)
 {
     while (node != NULL)
     {
-        for (int i = 0; i < level; i++) printf("\t");
+        for (int i = 0; i < level; i++) printf("  ");
         printf("Level %d Node -> ", level);
         if(node->tnt == 0)
         {
@@ -101,7 +109,7 @@ void printAST(ASTNODE node, int level)
 
         if (node->firstChild != NULL)
         {
-            for (int i = 0; i < level; i++) printf("\t");
+            for (int i = 0; i < level; i++) printf("  ");
             printf("Children: \n");
             printAST(node->firstChild, level + 1);
         }
@@ -124,6 +132,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         {
             node->lexeme = (char *) malloc(MAX_LEXEME);
             strcpy(node->lexeme, reqLexeme[currIndex++]);
+            printf("%s\n", node->lexeme);
         }
     } 
     else node->val.nt_val = parseTree->val.nt_val;
@@ -682,7 +691,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         assignN->tnt = 1;
         assignN->val.nt_val = assignOp; // ASSIGNED A NEW CONSTRUCT
         setASTChild(assignN, whichIDN);
-        setASTChild(assignN, inputNode0);
+        setASTChild(assignN, inputNode1);
         return assignN;
     
     }
