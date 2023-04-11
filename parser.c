@@ -210,7 +210,8 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
                 continue;
             }
         }
-        else if(temp->tnt==1){
+        else if(temp->tnt==1)
+        {
             printf("pre pop top: ");printNT(temp->val.nt_val); printf("\n");
             fflush(stdout);
             
@@ -246,13 +247,6 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
                             printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
                             sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
                             readToken = runLexerForParser(testcaseFile,10);
-
-
-                        sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
-                        if(sync_flag == 0)
-                        {
-                            sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
-                            readToken = runLexerForParser(testcaseFile,10);
                         }
                         else
                         {
@@ -276,7 +270,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     // printf("\n***********************************\n");
     ASTNODE temp = createAST(t1, reqLexeme);
     freeTree(t1);
-	  printAST(temp, 0);
+    return temp;
 }
 
 void automaticFirsts()
