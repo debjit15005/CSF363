@@ -10,8 +10,10 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include "lexerDef.h"
 #include "linkedlist.h"
 #include "ast.h"
+#include "parserDef.h"
 
 extern char** reqLexeme;
+extern SLIM scopeStack;
 
 void automaticFirsts();
 void automaticFollows();

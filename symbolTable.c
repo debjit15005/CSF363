@@ -7,6 +7,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lexer.h"
 #include "grammar.h"
 #include "parser.h"
@@ -18,7 +19,10 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include "hashtable.h"
 #include "symbolTable.h"
 
+
 // TODO: ADD LINE NUMBER TO ERRORS
+// TODO: TAKE CARE OF CASE WHEN MODULE DECLARATION AND DEFINITION BEFORE A CALL
+
 // TODO: CHECK IF LHS OF RANGE <= RHS OF RANGE FOR ANY TYPE OF RANGE CONSTRUCT?
 // TODO: WIDTH AND OFFSET CHECKING FOR DYNAMIC ARRAYS
 // TODO: if WHILE condition variables can change from get_value
@@ -194,7 +198,6 @@ void createSymTable(ASTNODE asTree)
     {
         doOtherModules(searchOtherMod);
     }
-
     // ADDING ALL DRIVER
     if(driverMod->val.nt_val == driverModule)
     {
@@ -204,11 +207,11 @@ void createSymTable(ASTNODE asTree)
         populateChildTable(driverMod->firstChild, childTable, 0);
     }
 
-    // ADDING ALL OTHERMODULES 2 NAMES
-    if(searchOtherMod2->val.nt_val == module)
-    {
-        doOtherModules(searchOtherMod2);
-    }
+    // // ADDING ALL OTHERMODULES 2 NAMES
+    // if(searchOtherMod2->val.nt_val == module)
+    // {
+    //     doOtherModules(searchOtherMod2);
+    // }
 }
 
 // If type = -1 returned then we received error
@@ -344,6 +347,9 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                 currTable->entries[entryIndex].isStatic = 0;
                 currTable->entries[entryIndex].isArray = 0;
             }
+            currTable->entries[entryIndex].scope[0] = currTable->symScope[0];
+            currTable->entries[entryIndex].scope[1] = currTable->symScope[1];
+
             currTable->entries[entryIndex].valid = 1;
             currTable->entries[entryIndex].type = type->val.t_val;
             strcpy(currTable->entries[entryIndex].lexeme, varID->lexeme);
@@ -415,8 +421,6 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                 type1->type = -1;
                 printf("ERROR index not within bounds\n");
             }
-            // TODO: CHECK BOUNDS OF STATIC ARRAY ( DONE )
-            // TODO: CHECK BOUNDS OF DYNAMIC ARRAY ????
             return type1;
         }
         
@@ -507,7 +511,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         childTable->nesting = currTable->nesting+1;
         setSYMTABLEChild(currTable, childTable);
         strcpy(childTable->moduleName, currTable->moduleName);
+        int start = getASTChild(currNode, 2)->line_no;
+        int end = getASTChild(currNode, 3)->line_no;
 
+        childTable->symScope[0] = start;
+        childTable->symScope[1] = end;
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0)->firstChild, currTable, current_offset);
         if(type1->type == -1 || type1->type != INTEGER)
         {
@@ -520,7 +528,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
             populateChildTable(getASTChild(asTree, 1), childTable, current_offset); // USE THIS TO RECURSIVELY CREATE TREE OF HASHTABLES
         }
         
-        populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the FOR block is done
+        populateChildTable(getASTChild(asTree, 4), currTable, current_offset); // To continue after the FOR block is done
     }
     else if(currNT == switchOp)
     {
@@ -583,7 +591,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
     else if(currNT == whileOp)
     {
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0), currTable, current_offset);
-        markAllID(getASTChild(asTree, 0), currTable);
+        markAllID(getASTChild(currNode, 0), currTable);
 
 
         SYMTABLE childTable = (SYMTABLE) malloc(sizeof(struct SymTable)); // For the WHILE block
@@ -591,7 +599,13 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         childTable->nesting = currTable->nesting+1;
         setSYMTABLEChild(currTable, childTable);
         strcpy(childTable->moduleName, currTable->moduleName);
+        int start = getASTChild(currNode, 2)->line_no;
+        int end = getASTChild(currNode, 3)->line_no;
+        childTable->symScope[0] = start;
+        childTable->symScope[1] = end;
         populateChildTable(getASTChild(currNode, 1), childTable, current_offset);
+
+        
 
         int conditionVariableChanged = 0;
         // Check if condition variable got changed
@@ -602,6 +616,14 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                 if(currTable->entries[i].isWhile == 1 && currTable->entries[i].changed == 1) conditionVariableChanged = 1;
             }
         }
+        SYMTABLE IPList = gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].ip_list;
+        for(int i = 0; i<MODULO; i++)
+        {
+            if(IPList->entries[i].valid == 1)
+            {
+                if(IPList->entries[i].isWhile == 1 && IPList->entries[i].changed == 1) conditionVariableChanged = 1;
+            }
+        }
         if(conditionVariableChanged == 0)
         {
             printf("\033[0;31mERROR condition variable not changed\033[0m \n");
@@ -609,7 +631,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
         }
 
 
-        populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the WHILE block is done
+        populateChildTable(getASTChild(asTree, 4), currTable, current_offset); // To continue after the WHILE block is done
     }
     else if(currNT == funCallOp)
     {
@@ -733,7 +755,7 @@ void printLocalTables(SYMTABLE htable)
             
             printf("%-10s ", currEntry.lexeme);
             printf("%-10s ", htable->moduleName);
-            // printf("%-10s ", currEntry.lexeme); // TODO: ADD scope line
+            printf("[%-3d,%-3d]  ", currEntry.scope[0], currEntry.scope[1]); // TODO: ADD scope line
             printf("%-10s ", "PLACEHOLDER");
             printf("%-10d ", currEntry.type); // type
             if(currEntry.isArray == 1)
@@ -769,6 +791,7 @@ void markAllID(ASTNODE asTree, SYMTABLE currTable)
     {
         SymTableEntry e1 = getEntryFromTable(asTree->lexeme, currTable);
         SYMTABLE recurseTable = currTable;
+
         while(recurseTable != NULL && (e1.valid != 1 || strcmp(asTree->lexeme, e1.lexeme) != 0))
         {
             recurseTable = recurseTable->parent;
@@ -776,9 +799,13 @@ void markAllID(ASTNODE asTree, SYMTABLE currTable)
         }
         if(recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0)
         {
+            printf("hello2\n");
+            fflush(stdout);
             int entryIndex = getHashIndex(recurseTable, asTree->lexeme, -1);
             recurseTable->entries[entryIndex].isWhile = 1;
             recurseTable->entries[entryIndex].changed = 0;
+            printf("hello3\n");
+            fflush(stdout);
         }
     }
     markAllID(asTree->nextSibling, currTable);
@@ -786,13 +813,16 @@ void markAllID(ASTNODE asTree, SYMTABLE currTable)
 
 void doOtherModules(ASTNODE searchOtherMod)
 {
-     while(searchOtherMod != NULL) // TODO: TAKE CARE OF CASE WHEN MODULE DECLARATION AND DEFINITION BEFORE A CALL
+    while(searchOtherMod != NULL) 
     {
         searchOtherMod = searchOtherMod->firstChild;
         char modName[MAX_LEXEME];
         strcpy(modName, searchOtherMod->lexeme);
 
-        // CREATE I/P PARA LIST
+        int start = searchFor(searchOtherMod, moduleDef)->firstChild->nextSibling->line_no;
+        int end = searchFor(searchOtherMod, moduleDef)->firstChild->nextSibling->nextSibling->line_no;
+
+        // // CREATE I/P PARA LIST
         SYMTABLE ipParaTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
         int sizeIP = 0; // To store the size of I/P
         for(int i = 0; i<MODULO; i++) ipParaTable->entries[i].valid = 0;
@@ -862,6 +892,8 @@ void doOtherModules(ASTNODE searchOtherMod)
                     ipParaTable->entries[entryIndex].isStatic = 0;
                     ipParaTable->entries[entryIndex].isArray = 0;
                 }
+                ipParaTable->entries[entryIndex].scope[0] = start;
+                ipParaTable->entries[entryIndex].scope[1] = end;
                 ipParaTable->entries[entryIndex].paraNum = sizeIP;
                 ipParaTable->entries[entryIndex].valid = 1;
                 ipParaTable->entries[entryIndex].type = type->val.t_val;
@@ -946,6 +978,8 @@ void doOtherModules(ASTNODE searchOtherMod)
                     OpParaTable->entries[entryIndex].isStatic = 0;
                     OpParaTable->entries[entryIndex].isArray = 0;
                 }
+                OpParaTable->entries[entryIndex].scope[0] = start;
+                OpParaTable->entries[entryIndex].scope[1] = end;
                 OpParaTable->entries[entryIndex].paraNum = sizeOP;
                 OpParaTable->entries[entryIndex].isOp = 1;
                 OpParaTable->entries[entryIndex].valid = 1;
@@ -964,8 +998,10 @@ void doOtherModules(ASTNODE searchOtherMod)
         
         insertGlobalSym(gSymTable, modName, -1, ipParaTable, OpParaTable, sizeIP, sizeOP);
         SYMTABLE childTable = getfromGlobal(modName, gSymTable);
+        childTable->symScope[0] = start;
+        childTable->symScope[1] = end;
         strcpy(childTable->moduleName, modName);
-        populateChildTable(searchOtherMod->nextSibling->nextSibling->nextSibling, childTable, 0);
+        populateChildTable(searchOtherMod->nextSibling->nextSibling->nextSibling->firstChild, childTable, 0);
 
         // TO CHECK IF OP PARAMETERS GOT CHANGED
         int outputVariableChanged = 0;

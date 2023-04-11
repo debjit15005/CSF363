@@ -38,6 +38,7 @@ struct SymTable{
     struct SymTable* parent;
     int nesting; // Nesting level
     char moduleName[MAX_LEXEME]; // scope name
+    int symScope[2];
     SymTableEntry entries[MODULO]; // Array of entries
 };
 
