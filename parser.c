@@ -248,34 +248,36 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
                             readToken = runLexerForParser(testcaseFile,10);
 
 
-                        sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
-                        if(sync_flag == 0)
-                        {
-                            sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
-                            readToken = runLexerForParser(testcaseFile,10);
-                        }
-                        else
-                        {
-                            push(mainStack, temp);
+                            sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
+                            if(sync_flag == 0)
+                            {
+                                sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
+                                readToken = runLexerForParser(testcaseFile,10);
+                            }
+                            else
+                            {
+                                push(mainStack, temp);
+                            }
+
                         }
 
                     }
-
                 }
             }
             while(sync_flag == 0);
-        }
+        }    
         else{
             printf("ERROR: Stack emptied before input consumed\n");
             
+        
         }
+        printf("\n");
+        // printTree(t1, 0);
+        // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
+        // printf("\n***********************************\n");
+        ASTNODE asTree = createAST(t1, reqLexeme);
+        return asTree;
     }
-    printf("\n");
-    // printTree(t1, 0);
-    // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
-    // printf("\n***********************************\n");
-    ASTNODE asTree = createAST(t1, reqLexeme);
-    return asTree;
 }
 
 void automaticFirsts()
