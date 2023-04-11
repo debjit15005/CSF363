@@ -274,8 +274,9 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     // printTree(t1, 0);
     // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
     // printf("\n***********************************\n");
-    ASTNODE asTree = createAST(t1, reqLexeme);
-    return asTree;
+    ASTNODE temp = createAST(t1, reqLexeme);
+    freeTree(t1);
+	  printAST(temp, 0);
 }
 
 void automaticFirsts()

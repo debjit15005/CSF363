@@ -117,7 +117,7 @@ void printAST(ASTNODE node, int level)
     }
 }
 
-
+/* This recurses to create ast node */
 ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 {
     int production_rule = parseTree->rule_no;
