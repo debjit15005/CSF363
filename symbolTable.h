@@ -12,7 +12,7 @@ extern GlobalSymTable gSymTable[MODULO];
 
 void createSymTable(ASTNODE asTree);
 void initSymTable();
-void insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed);
+void insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed, SYMTABLE Inp, SYMTABLE Outp);
 SYMTABLE getfromGlobal(char *lexeme, GLOBALSYMTABLE htable);
 void printGlobalTable(GLOBALSYMTABLE htable);
 

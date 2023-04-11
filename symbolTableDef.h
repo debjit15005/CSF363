@@ -23,10 +23,11 @@ typedef struct {
     int scope[2]; // scope line
     // char scopeName[MAX_LEXEME]; 
     char lexeme[MAX_LEXEME]; // variable name
+
     int isFor; // If it is a for loop variable
     int isWhile; // If it is a while loop variable
     int changed; // If the while loop variable changed
-
+    int isOp; // If it is an O/P parameter
 } SymTableEntry;
 
 struct SymTable{

@@ -22,6 +22,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 // TODO: CHECK IF LHS OF RANGE <= RHS OF RANGE FOR ANY TYPE OF RANGE CONSTRUCT
 // TODO: WIDTH AND OFFSET CHECKING FOR DYNAMIC ARRAYS
 // TODO: if WHILE condition variables can change from get_value
+// TODO: Undeclared variable should not be reported as an error
 
 GlobalSymTable gSymTable[MODULO]; // Creating a global symbol table with 'MODULO' entries
 
@@ -41,6 +42,20 @@ int getHashIndex(SYMTABLE htable, char* key, int hashed)
             return hashed; // Found entry
         }
         return getHashIndex(htable, key, (++hashed)%MODULO);
+    }
+    else return -1; // Entry doesn't exist in table
+}
+
+int getHashIndexfromGlobal(GLOBALSYMTABLE htable, char* key, int hashed)
+{
+    if(hashed == -1) hashed = hashcode(key);
+    if(htable[hashed].valid == 1)
+    {
+        if(strcmp(htable[hashed].lexeme, key) == 0)
+        {
+            return hashed; // Found entry
+        }
+        return getHashIndexfromGlobal(htable, key, (++hashed)%MODULO);
     }
     else return -1; // Entry doesn't exist in table
 }
@@ -68,7 +83,7 @@ void initSymTable()
     for(int i=0;i<MODULO;i++) gSymTable[i].valid = 0;
 }
 
-void insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed) // TODO: ADD I/P AND O/P PARA LIST LATER
+void insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed, SYMTABLE Inp, SYMTABLE Outp)
 {   
     if(hashed == -1) hashed = hashcode(key); // hashcode() called from HTable.c
     if(htable[hashed].valid == 1)
@@ -79,10 +94,12 @@ void insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed) // TODO: ADD 
             printf("\033[0;31mERROR %s MODULE NAME ALREADY EXISTS \033[0m \n", key);
             return;
         }
-        insertGlobalSym(htable, key, (++hashed)%MODULO);
+        insertGlobalSym(htable, key, (++hashed)%MODULO, Inp, Outp);
     }
     else
     {
+        htable[hashed].ip_list = Inp;
+        htable[hashed].op_list = Outp;
         strcpy(htable[hashed].lexeme, key);
         htable[hashed].firstChild = (SYMTABLE) malloc(sizeof(struct SymTable));
         SYMTABLE tempTable = htable[hashed].firstChild;
@@ -99,14 +116,17 @@ int insertLocalSym(SYMTABLE htable, char* key, int hashed) // Checks if a key al
     SymTableEntry e1 = htable->entries[hashed];
     if(e1.valid == 1)
     {
+       
         if(strcmp(e1.lexeme, key) == 0)
         {
-            // TODO: ADD CHECK FOR INPUT PARAMETER LIST
-            return -1;
+            return -1; // RETURNS -1 IF IT EXISTS
         }
         return insertLocalSym(htable, key, (++hashed)%MODULO);
     }
-    else return hashed;
+    else
+    {
+        return hashed; // RETURNS INDEX AT WHICH WE CAN INSERT
+    } 
 }   
 
 SYMTABLE getfromGlobal(char *lexeme, GLOBALSYMTABLE htable){
@@ -144,7 +164,7 @@ void createSymTable(ASTNODE asTree)
     // ADDING ALL MODULE DECLARATIONS
     while(searchModDecl != NULL)
     {
-        insertGlobalSym(gSymTable, searchModDecl->firstChild->lexeme, -1);
+        insertGlobalSym(gSymTable, searchModDecl->firstChild->lexeme, -1, NULL, NULL);
         SYMTABLE childTable = getfromGlobal(searchModDecl->firstChild->lexeme, gSymTable);
         strcpy(childTable->moduleName, searchModDecl->firstChild->lexeme);
         searchModDecl = searchFor(searchModDecl->firstChild, moduleDeclaration);
@@ -157,91 +177,189 @@ void createSymTable(ASTNODE asTree)
         searchOtherMod = searchOtherMod->firstChild;
         char modName[MAX_LEXEME];
         strcpy(modName, searchOtherMod->lexeme);
-        insertGlobalSym(gSymTable, modName, -1);
+
+        // CREATE I/P PARA LIST
+        SYMTABLE ipParaTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
+        for(int i = 0; i<MODULO; i++) ipParaTable->entries[i].valid = 0;
+        ipParaTable->nesting = 0;
+        int current_offset = 0; // TODO: Fix this offset and O/P Para list offset
+        ASTNODE ipNode = searchOtherMod->nextSibling;
+        while(ipNode != NULL)
+        {
+            ASTNODE keyNode = ipNode->firstChild;
+            int entryIndex = insertLocalSym(ipParaTable, keyNode->lexeme,-1);
+            if(entryIndex != -1)
+            {
+                
+                ASTNODE type = keyNode->nextSibling;
+                int isArray = 0, width = 0, isStatic = 0, mult = 0;
+                char* r1 = (char *) malloc(10*sizeof(char));
+                char* r2 = (char *) malloc(10*sizeof(char));
+                if(type->val.nt_val == arrType)
+                {
+                    isArray = 1;
+                    ASTNODE num1 = type->firstChild->firstChild;
+                    ASTNODE num2 = num1->nextSibling;
+                    type = type->firstChild->nextSibling;
+                    if(num1->firstChild->val.t_val == EPSILON) strcpy(r1, num1->firstChild->nextSibling->lexeme); // TODO: Check the variable names in arrRange
+                    else if(num1->firstChild->val.t_val == PLUS)
+                    {
+                        strcpy(r1, "+");
+                        strcat(r1,num1->firstChild->nextSibling->lexeme);
+                    }
+                    else
+                    {
+                        strcpy(r1, "-");
+                        strcat(r1,num1->firstChild->nextSibling->lexeme);
+                    }
+                    if(num2->firstChild->val.t_val == EPSILON) strcpy(r2, num2->firstChild->nextSibling->lexeme);
+                    else if(num2->firstChild->val.t_val == PLUS)
+                    {
+                        strcpy(r2, "+");
+                        strcat(r2,num2->firstChild->nextSibling->lexeme);
+                    }
+                    else
+                    {
+                        strcpy(r2, "-");
+                        strcat(r2,num2->firstChild->nextSibling->lexeme);
+                    }
+                    if(num1->firstChild->nextSibling->val.t_val == ID || num2->firstChild->nextSibling->val.t_val == ID) isStatic = 0;
+                    else isStatic = 1;
+                }
+                if(type->val.t_val == INTEGER) mult = 2;
+                else if(type->val.t_val == REAL) mult = 4;
+                else if(type->val.t_val == BOOLEAN) mult = 1;
+
+                
+                ipParaTable->entries[entryIndex].offset = current_offset;
+                if(isArray == 1) // IF ARRAY TYPE
+                {
+                    width = (atoi(r2)-atoi(r1)+1)*mult + 1;
+                    ipParaTable->entries[entryIndex].width = width;
+                    strcpy(ipParaTable->entries[entryIndex].r1, r1);
+                    strcpy(ipParaTable->entries[entryIndex].r2, r2);
+                    ipParaTable->entries[entryIndex].isStatic = isStatic;
+                    ipParaTable->entries[entryIndex].isArray = 1;
+                    
+                }
+                else // IF NOT ARRAY TYPE
+                {
+                    ipParaTable->entries[entryIndex].width = mult;
+                    ipParaTable->entries[entryIndex].isStatic = 0;
+                    ipParaTable->entries[entryIndex].isArray = 0;
+                }
+                ipParaTable->entries[entryIndex].valid = 1;
+                ipParaTable->entries[entryIndex].type = type->val.t_val;
+                strcpy(ipParaTable->entries[entryIndex].lexeme, keyNode->lexeme);
+                current_offset += ipParaTable->entries[entryIndex].width;
+            }
+            else 
+            {
+                printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
+            }
+            ipNode = getASTChild(ipNode, 2);
+        }
+
+        // CREATE O/P PARA LIST
+        SYMTABLE OpParaTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
+        for(int i = 0; i<MODULO; i++) OpParaTable->entries[i].valid = 0;
+        OpParaTable->nesting = 0;
+        ASTNODE OpNode = searchOtherMod->nextSibling->nextSibling->firstChild;
+        while(OpNode != NULL)
+        {
+            ASTNODE keyNode = OpNode->firstChild;
+            int entryIndex = insertLocalSym(OpParaTable, keyNode->lexeme,-1);
+            if(entryIndex != -1)
+            {   
+                ASTNODE type = keyNode->nextSibling;
+                int isArray = 0, width = 0, isStatic = 0, mult = 0;
+                char* r1 = (char *) malloc(10*sizeof(char));
+                char* r2 = (char *) malloc(10*sizeof(char));
+                if(type->val.nt_val == arrType)
+                {
+                    isArray = 1;
+                    ASTNODE num1 = type->firstChild->firstChild;
+                    ASTNODE num2 = num1->nextSibling;
+                    type = type->firstChild->nextSibling;
+                    if(num1->firstChild->val.t_val == EPSILON) strcpy(r1, num1->firstChild->nextSibling->lexeme); // TODO: Check the variable names in arrRange
+                    else if(num1->firstChild->val.t_val == PLUS)
+                    {
+                        strcpy(r1, "+");
+                        strcat(r1,num1->firstChild->nextSibling->lexeme);
+                    }
+                    else
+                    {
+                        strcpy(r1, "-");
+                        strcat(r1,num1->firstChild->nextSibling->lexeme);
+                    }
+                    if(num2->firstChild->val.t_val == EPSILON) strcpy(r2, num2->firstChild->nextSibling->lexeme);
+                    else if(num2->firstChild->val.t_val == PLUS)
+                    {
+                        strcpy(r2, "+");
+                        strcat(r2,num2->firstChild->nextSibling->lexeme);
+                    }
+                    else
+                    {
+                        strcpy(r2, "-");
+                        strcat(r2,num2->firstChild->nextSibling->lexeme);
+                    }
+                    if(num1->firstChild->nextSibling->val.t_val == ID || num2->firstChild->nextSibling->val.t_val == ID) isStatic = 0;
+                    else isStatic = 1;
+                }
+                if(type->val.t_val == INTEGER) mult = 2;
+                else if(type->val.t_val == REAL) mult = 4;
+                else if(type->val.t_val == BOOLEAN) mult = 1;
+
+                
+                OpParaTable->entries[entryIndex].offset = current_offset;
+                if(isArray == 1) // IF ARRAY TYPE
+                {
+                    width = (atoi(r2)-atoi(r1)+1)*mult + 1;
+                    OpParaTable->entries[entryIndex].width = width;
+                    strcpy(OpParaTable->entries[entryIndex].r1, r1);
+                    strcpy(OpParaTable->entries[entryIndex].r2, r2);
+                    OpParaTable->entries[entryIndex].isStatic = isStatic;
+                    OpParaTable->entries[entryIndex].isArray = 1;
+                    
+                }
+                else // IF NOT ARRAY TYPE
+                {
+                    OpParaTable->entries[entryIndex].width = mult;
+                    OpParaTable->entries[entryIndex].isStatic = 0;
+                    OpParaTable->entries[entryIndex].isArray = 0;
+                }
+                OpParaTable->entries[entryIndex].isOp = 1;
+                OpParaTable->entries[entryIndex].valid = 1;
+                OpParaTable->entries[entryIndex].type = type->val.t_val;
+                strcpy(OpParaTable->entries[entryIndex].lexeme, keyNode->lexeme);
+                current_offset += OpParaTable->entries[entryIndex].width;
+            }
+            else 
+            {
+                printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
+            }
+            OpNode = getASTChild(OpNode, 2);
+        }
+        
+        insertGlobalSym(gSymTable, modName, -1, ipParaTable, OpParaTable);
         SYMTABLE childTable = getfromGlobal(modName, gSymTable);
         strcpy(childTable->moduleName, modName);
+        populateChildTable(searchOtherMod->nextSibling->nextSibling->nextSibling, childTable, 0);
 
-        // // CREATE I/P PARA LIST
-        // SYMTABLE ipParaTable = (SYMTABLE) malloc(sizeof(struct SymTable)); 
-        // for(int i = 0; i<MODULO; i++) ipParaTable->entries[i].valid = 0;
-        // ipParaTable->nesting = -1; // Setting nesting as -1 to show that it is a I/P or O/P table
-
-        // int current_offset = 0;
-        // ASTNODE ipNode = searchOtherMod->nextSibling;
-        // while(ipNode != NULL)
-        // {
-        //     ASTNODE keyNode = ipNode->firstChild;
-        //     if(insertLocalSym(ipParaTable, keyNode->lexeme,-1) != -1)
-        //     {
-        //         ASTNODE type = keyNode->nextSibling;
-        //         int isArray = 0, width = 0, isStatic = 0, mult = 0;
-        //         char* r1 = (char *) malloc(10*sizeof(char));
-        //         char* r2 = (char *) malloc(10*sizeof(char));
-        //         if(type->val.nt_val == arrType)
-        //         {
-        //             isArray = 1;
-        //             ASTNODE num1 = type->firstChild->firstChild;
-        //             ASTNODE num2 = num1->nextSibling;
-        //             type = type->firstChild->nextSibling;
-        //             if(num1->firstChild->val.t_val == EPSILON) strcpy(r1, num1->firstChild->nextSibling->lexeme); // TODO: Check the variable names in arrRange
-        //             else if(num1->firstChild->val.t_val == PLUS)
-        //             {
-        //                 strcpy(r1, "+");
-        //                 strcat(r1,num1->firstChild->nextSibling->lexeme);
-        //             }
-        //             else
-        //             {
-        //                 strcpy(r1, "-");
-        //                 strcat(r1,num1->firstChild->nextSibling->lexeme);
-        //             }
-        //             if(num2->firstChild->val.t_val == EPSILON) strcpy(r2, num2->firstChild->nextSibling->lexeme);
-        //             else if(num2->firstChild->val.t_val == PLUS)
-        //             {
-        //                 strcpy(r2, "+");
-        //                 strcat(r2,num2->firstChild->nextSibling->lexeme);
-        //             }
-        //             else
-        //             {
-        //                 strcpy(r2, "-");
-        //                 strcat(r2,num2->firstChild->nextSibling->lexeme);
-        //             }
-        //             if(num1->firstChild->nextSibling->val.t_val == ID || num2->firstChild->nextSibling->val.t_val == ID) isStatic = 0;
-        //             else isStatic = 1;
-        //         }
-        //         if(type->val.t_val == INTEGER) mult = 2;
-        //         else if(type->val.t_val == REAL) mult = 4;
-        //         else if(type->val.t_val == BOOLEAN) mult = 1;
-
-        //         int entryIndex = getHashIndex(ipParaTable, keyNode->lexeme, -1);
-        //         ipParaTable->entries[entryIndex].offset = current_offset;
-        //         if(isArray == 1) // IF ARRAY TYPE
-        //         {
-        //             width = (atoi(r2)-atoi(r1)+1)*mult + 1;
-        //             ipParaTable->entries[entryIndex].width = width;
-        //             strcpy(ipParaTable->entries[entryIndex].r1, r1);
-        //             strcpy(ipParaTable->entries[entryIndex].r2, r2);
-        //             ipParaTable->entries[entryIndex].isStatic = isStatic;
-        //             ipParaTable->entries[entryIndex].isArray = 1;
-                    
-        //         }
-        //         else // IF NOT ARRAY TYPE
-        //         {
-        //             ipParaTable->entries[entryIndex].width = mult;
-        //             ipParaTable->entries[entryIndex].isStatic = 0;
-        //             ipParaTable->entries[entryIndex].isArray = 0;
-        //         }
-        //         ipParaTable->entries[entryIndex].valid = 1;
-        //         ipParaTable->entries[entryIndex].type = type->val.t_val;
-        //         strcpy(ipParaTable->entries[entryIndex].lexeme, keyNode->lexeme);
-        //         current_offset += ipParaTable->entries[entryIndex].width;
-        //     }
-        //     else 
-        //     {
-        //         printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
-        //     }
-        //     ipNode = getASTChild(ipNode, 2);
-        // }
-        populateChildTable(searchOtherMod->nextSibling->nextSibling->nextSibling, childTable, 0); // TODO: ADD I/P AND O/P PARA LIST INSTEAD OF 3 NEXTSIBLINGS
+        // TO CHECK IF OP PARAMETERS GOT CHANGED
+        int outputVariableChanged = 0;
+        for(int i = 0; i<MODULO; i++) 
+        {
+            if(OpParaTable->entries[i].valid == 1)
+            {
+                if(OpParaTable->entries[i].isOp == -1) outputVariableChanged = 1;
+            }
+            
+        }
+        if(outputVariableChanged != 1)
+        {
+            printf("\033[0;31mERROR Output variables unchanged \033[0m \n");
+        }
         searchOtherMod = searchFor(searchOtherMod, module);
     }
 
@@ -280,11 +398,22 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
                 recurseTable = recurseTable->parent;
                 if(recurseTable != NULL) e1 = getEntryFromTable(asTree->lexeme, recurseTable);
             }
-            if(recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0)
+            if(recurseTable == NULL)
+            {
+                e1 = getEntryFromTable(asTree->lexeme, gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].ip_list);
+                if(strcmp(asTree->lexeme, e1.lexeme) != 0) e1 = getEntryFromTable(asTree->lexeme, gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].op_list);
+            }
+            
+            if(strcmp(asTree->lexeme, e1.lexeme) == 0)
             {
                 node->type = e1.type;
                 node->isArray = e1.isArray;
                 node->isFor = e1.isFor;
+                if(e1.isOp == 1)
+                {
+                    SYMTABLE OPLIST = gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].op_list;
+                    OPLIST->entries[getHashIndex(OPLIST, asTree->lexeme, -1)].isOp = -1;
+                }
                 if(e1.isWhile == 1) recurseTable->entries[getHashIndex(recurseTable, asTree->lexeme, -1)].changed = 1;
                 if(e1.isArray == 1)
                 {
@@ -380,7 +509,6 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
            
             varID = varID->firstChild;
         }
-        // printf("offset is %d\n", current_offset);
         populateChildTable(getASTChild(asTree, 2), currTable, current_offset);
     }
     else if(currNT == assignOp) // Assignment statement
@@ -403,12 +531,12 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
             }
             else if((type1->isArray ^ type2->isArray == 1) && (child1->val.nt_val != arrElement && child2->val.nt_val != arrElement ))
             {
-                printf("ERROR Type Mismatch\n"); // If of the form A := B where A is integer and B is Array of integer
+                printf("ERROR Type Mismatch\n"); // If of the form A := B where A is an integer and B is an Array of integer
                 node->type = -1;
             }
             else if(type1->isArray == 1 && type2->isArray == 1)
             {
-                if(child1->val.nt_val != arrElement && child2->val.nt_val != arrElement) // If of the from A := B where A and B are both array of the same type
+                if(child1->val.nt_val != arrElement && child2->val.nt_val != arrElement) // If of the from A := B where A and B are both arrays of the same type
                 {
                     if((atoi(type1->r2)-atoi(type1->r1)) != (atoi(type2->r2)-atoi(type2->r1))) // Check for bounds matching
                     {
@@ -641,6 +769,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable, int curroff
 
         populateChildTable(getASTChild(asTree, 2), currTable, current_offset); // To continue after the WHILE block is done
     }
+    else if(currNT == funCallOp)
+    {
+
+    }
+
     return node; 
 }
 
@@ -663,6 +796,11 @@ void printGlobalTable(GLOBALSYMTABLE htable)
     {
         if(htable[i].valid == 1)
         {
+            printf("Input parameter list:\n");
+            printLocalTables(htable[i].ip_list);
+            printf("Output parameter list:\n");
+            printLocalTables(htable[i].op_list);
+            printf("Rest:\n");
             printLocalTables(htable[i].firstChild);
         }
     }
@@ -722,7 +860,7 @@ void markAllID(ASTNODE asTree, SYMTABLE currTable)
             recurseTable = recurseTable->parent;
             if(recurseTable != NULL) e1 = getEntryFromTable(asTree->lexeme, recurseTable);
         }
-        if(recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0) // TODO: ADD CHECKING IN PARENT TABLE IF NOT FOUND IN CURRENT TABLE (DONE)
+        if(recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0)
         {
             int entryIndex = getHashIndex(recurseTable, asTree->lexeme, -1);
             recurseTable->entries[entryIndex].isWhile = 1;
