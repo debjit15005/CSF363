@@ -18,6 +18,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 
 //char** reqLexeme;
 int currIndex = 0;
+int lineIndexS = 0;
 
 ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
 {
@@ -133,9 +134,17 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
             node->lexeme = (char *) malloc(MAX_LEXEME);
             strcpy(node->lexeme, reqLexeme[currIndex++]);
         }
+        else if(t == START)
+        {
+            node->line_no = scopeStack[lineIndexS].start;
+        }
+        else if(t == END)
+        {
+            node->line_no = scopeStack[lineIndexS++].end;
+        }
     } 
     else node->val.nt_val = parseTree->val.nt_val;
-    node->line_no = parseTree->line_no;
+    
     node->firstChild = NULL;
     node->nextSibling = NULL;    
     node->parent = NULL; 
@@ -439,7 +448,16 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 
 
         TREENODE childNode = getParseChild(parseTree, 1);
-        return(doRecursion(childNode, NULL));
+        TREENODE startNode = getParseChild(parseTree,0);
+        TREENODE endNode = getParseChild(parseTree,2);
+        ASTNODE statementsNode = doRecursion(childNode, NULL);
+        ASTNODE startANode =  doRecursion(startNode, NULL);
+        ASTNODE endANode = doRecursion(endNode, NULL);
+        printf("%d %d\n", startANode->line_no, endANode->line_no);
+        setASTChild(node,statementsNode);
+        setASTChild(node,startANode);
+        setASTChild(node,endANode);
+        
 
     }
     else if( production_rule == 25)
@@ -1593,11 +1611,15 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         TREENODE childNode1 = getParseChild(parseTree, 2);
         TREENODE childNode2 = getParseChild(parseTree, 4);
         TREENODE childNode3 = getParseChild(parseTree, 7);
+        TREENODE childNode4 = getParseChild(parseTree, 6);
+        TREENODE childNode5 = getParseChild(parseTree, 8);
 
         ASTNODE inputNode0 =  doRecursion(childNode1, NULL); // ID
         ASTNODE inputNode1 =  doRecursion(childNode2, NULL); // <for_range>.addr_syn
         ASTNODE inputNode2 =  doRecursion(childNode3, NULL); // <statements>.addr_syn
-
+        ASTNODE inputNode3 =  doRecursion(childNode4, NULL); // START
+        ASTNODE inputNode4 =  doRecursion(childNode5, NULL); // END
+        printf("%d %d\n", inputNode3->line_no, inputNode4->line_no);
         ASTNODE forIDnRangeN = (ASTNODE) malloc(sizeof(struct ASTNode));
         forIDnRangeN->tnt = 1;
         forIDnRangeN->val.nt_val = forIDnRangeOp;
@@ -1612,6 +1634,8 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         setASTChild(forN, forIDnRangeN);
         setASTChild(forN, inputNode2);
 
+        setASTChild(forN, inputNode3);
+        setASTChild(forN, inputNode4);
         return forN;
     }
     else if( production_rule == 128)
@@ -1621,9 +1645,13 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         free(node);
         TREENODE childNode1 = getParseChild(parseTree, 2);
         TREENODE childNode2 = getParseChild(parseTree, 5);
+        TREENODE childNode3 = getParseChild(parseTree, 4);
+        TREENODE childNode4 = getParseChild(parseTree, 6);
 
         ASTNODE inputNode0 =  doRecursion(childNode1, NULL); // <abExpr>.addr_syn
         ASTNODE inputNode1 =  doRecursion(childNode2, NULL); // <statements>.addr_syn
+        ASTNODE inputNode2 =  doRecursion(childNode3, NULL); // START
+        ASTNODE inputNode3 =  doRecursion(childNode4, NULL); // END
 
         ASTNODE whileN = (ASTNODE) malloc(sizeof(struct ASTNode));
         whileN->tnt = 1;
@@ -1631,6 +1659,8 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
 
         setASTChild(whileN, inputNode0);
         setASTChild(whileN, inputNode1);
+        setASTChild(whileN, inputNode2);
+        setASTChild(whileN, inputNode3);
 
         return whileN;
     }

@@ -14,6 +14,8 @@ ID:2020A7PS0986P    Name: Nidhish Parekh
 #include <stdio.h>
 #include <stdlib.h>
 
+int CURRENT_ARRAY_SIZE1 = 30;
+int CURRENT_ARRAY_SIZE2 = 10;
  
 
 int** parseTable;
@@ -23,6 +25,7 @@ NODE doFirsts(int i);
 NODE doFollows(int i);
 TREENODE t1; // The parse tree
 char** reqLexeme;
+SLIM scopeStack;
 
 // TODO : FREE reqLexeme
 
@@ -122,6 +125,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     // readToken = runLexerForParser(testcaseFile,10);
     
     Stack* mainStack = newStack(); 
+    scopeStack = (SLIM) malloc(CURRENT_ARRAY_SIZE2*sizeof(scopeLim));
     token placeholder;
     push(mainStack, createNewTerm(ENDOFFILE,0,0));
     push(mainStack, createNewTerm(placeholder, program, 1));
@@ -129,10 +133,12 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     printStack(mainStack);
     printf("\n");
 
-    int CURRENT_ARRAY_SIZE = 30;
-    reqLexeme = (char **) malloc(CURRENT_ARRAY_SIZE*sizeof(char *));
+    
+    reqLexeme = (char **) malloc(CURRENT_ARRAY_SIZE1*sizeof(char *));
+    int* reqLineS = (int *) malloc(CURRENT_ARRAY_SIZE2*sizeof(int));
     int lexemeIndex = 0;
-
+    int lineIndexS = -1;
+    int lineIndexE = 0;
     int tek = 0;
 
     tek++;
@@ -187,15 +193,31 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
                 token t = readToken->token;
                 if(t == ID || t == NUM || t == RNUM)
                 {
-                    if(lexemeIndex == CURRENT_ARRAY_SIZE)
+                    if(lexemeIndex == CURRENT_ARRAY_SIZE1)
                     {
-                        CURRENT_ARRAY_SIZE *= 2;
-                        reqLexeme = (char **) realloc(reqLexeme, CURRENT_ARRAY_SIZE*sizeof(char *));
+                        CURRENT_ARRAY_SIZE1 *= 2;
+                        reqLexeme = (char **) realloc(reqLexeme, CURRENT_ARRAY_SIZE1*sizeof(char *));
                     } 
                     reqLexeme[lexemeIndex] = (char *) malloc(MAX_LEXEME);
                     if(t == ID) strcpy(reqLexeme[lexemeIndex++], readToken->tv.lexeme);
                     else if(t == NUM) sprintf(reqLexeme[lexemeIndex++], "%lld", readToken->tv.i_val);
                     else sprintf(reqLexeme[lexemeIndex++], "%f", readToken->tv.f_val);
+                }
+                if(t == START)
+                {
+                    if(lineIndexS == CURRENT_ARRAY_SIZE2)
+                    {
+                        CURRENT_ARRAY_SIZE2 *= 2;
+                        reqLineS = (int *) realloc(reqLineS, CURRENT_ARRAY_SIZE2*sizeof(int ));
+                        scopeStack = (SLIM) realloc(scopeStack, CURRENT_ARRAY_SIZE2*sizeof(scopeLim));
+                    }
+                    reqLineS[++lineIndexS] = readToken->line_num;
+                }
+                else if(t == END)
+                {
+                    scopeStack[lineIndexE].start = reqLineS[lineIndexS];
+                    scopeStack[lineIndexE++].end = readToken->line_num;
+                    lineIndexS--;
                 }
                 
                 readToken = runLexerForParser(testcaseFile,10);
@@ -266,7 +288,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
     }
     printf("\n");
     // printTree(t1, 0);
-    // for(int i = 0; i<lexemeIndex; i++) printf("%s\n", reqLexeme[i]);
+    // for(int i = 0; i<lineIndexS; i++) printf("sTART is %d\n", reqLineS[i]);
     // printf("\n***********************************\n");
     ASTNODE temp = createAST(t1, reqLexeme);
     freeTree(t1);

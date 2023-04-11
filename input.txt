@@ -2,18 +2,13 @@
 takes input [x:integer, y: boolean, p:real];
 returns [m:integer, z:real, u: boolean];
 start
-	m := 2;
-end	
-
-<<module compute>>
-takes input [x:integer, y: real, p:boolean];
-returns [m:integer, z:real, u: boolean];
-start
+	while(x)
+	start
+		declare mew: boolean;
+		x:= 2;
+	end
 	
-	[x, y, p] :=use module compute1 with parameters x, p;
-	m := 2;
-end	
-
+end
 
 <<<driver program>>>
 start
@@ -21,12 +16,3 @@ start
 	declare k:integer;
 	declare s:real;
 end
-
-<<module compute3>>
-takes input [x:integer, y: real, p:boolean];
-returns [m:integer, z:real, u: boolean];
-start
-	
-	[x, y, p] :=use module compute1 with parameters x, p;
-	m := 2;
-end	
