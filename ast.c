@@ -598,15 +598,15 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         ASTNODE whichIDN = (ASTNODE) malloc(sizeof(struct ASTNode));
         whichIDN->tnt = 1;
         whichIDN->val.nt_val = arrElement; // ASSIGNED A NEW CONSTRUCT
-        setASTChild(whichIDN, asTree);
-        setASTChild(whichIDN, inputNode0);
+        setASTChild(whichIDN, asTree); // ID
+        setASTChild(whichIDN, inputNode0); // <num_or_id>.addr_syn
         return whichIDN;
     }
     else if( production_rule == 41)
     {
         //<which_ID> → EPSILON
         free(node);
-        return asTree;
+        return asTree; // <which_ID>.addr_syn = <which_ID>.addr_inh
     
     }
     else if( production_rule == 42)

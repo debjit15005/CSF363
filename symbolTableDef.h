@@ -28,6 +28,8 @@ typedef struct {
     int isWhile; // If it is a while loop variable
     int changed; // If the while loop variable changed
     int isOp; // If it is an O/P parameter
+    int paraNum; // Index of the I/P or O/P parameter
+    
 } SymTableEntry;
 
 struct SymTable{
@@ -48,6 +50,8 @@ typedef struct {
     char lexeme[MAX_LEXEME]; // module name
     SYMTABLE ip_list; /* CHECK IF THESE ARE NEEDED */
     SYMTABLE op_list; /* CHECK IF THESE ARE NEEDED */
+    int sizeOp; // Number of elements in O/P List
+    int sizeIp; // Number of elements in I/P List
 } GlobalSymTable;
 
 typedef GlobalSymTable* GLOBALSYMTABLE;
