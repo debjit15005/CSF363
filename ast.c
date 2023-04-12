@@ -1150,12 +1150,13 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         else if(t == MINUS) lowOPN->val.nt_val = MINUSOp;
 
         setASTChild(lowOPN, asTree);
-        setASTChild(lowOPN, inputNode2);
+        // setASTChild(lowOPN, inputNode2);
 
         TREENODE childNode3 = getParseChild(parseTree, 2);
-        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arithmeticExpr2(2).addr_syn
+        ASTNODE inputNode3 = doRecursion(childNode3, inputNode2); // arithmeticExpr2(2).addr_syn
 
-        return inputNode3;
+        setASTChild(lowOPN, inputNode3);
+        return lowOPN;
     
     }
     else if( production_rule == 87)
@@ -1195,12 +1196,14 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         else if(t == DIV) lowOPN->val.nt_val = DIVOp;
 
         setASTChild(lowOPN, asTree);
-        setASTChild(lowOPN, inputNode2);
+        // setASTChild(lowOPN, inputNode2);
 
         TREENODE childNode3 = getParseChild(parseTree, 2);
-        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // term2(2).addr_syn
+        ASTNODE inputNode3 = doRecursion(childNode3, inputNode2); // term2(2).addr_syn
 
-        return inputNode3;
+        setASTChild(lowOPN, inputNode3);
+
+        return lowOPN;
     }
     else if( production_rule == 90)
     {
@@ -1280,12 +1283,12 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         else if(t == MINUS) lowOPN->val.nt_val = MINUSOp;
 
         setASTChild(lowOPN, asTree);
-        setASTChild(lowOPN, inputNode2);
+        
 
         TREENODE childNode3 = getParseChild(parseTree, 2);
-        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arrExpr2(2).addr_syn
-
-        return inputNode3;
+        ASTNODE inputNode3 = doRecursion(childNode3, inputNode2); // arrExpr2(2).addr_syn
+        setASTChild(lowOPN, inputNode3);
+        return lowOPN;
     }
     else if( production_rule == 97)
     {
@@ -1310,7 +1313,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
     {
         //<arrTerm2> → <high_op> <arrFactor> <arrTerm2>
 
-         TREENODE childNode1 = getParseChild(parseTree, 0);  
+        TREENODE childNode1 = getParseChild(parseTree, 0);  
         ASTNODE inputNode1 = doRecursion(childNode1, NULL); // high_op.addr_syn
 
         TREENODE childNode2 = getParseChild(parseTree, 1);
@@ -1323,12 +1326,12 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         else if(t == DIV) lowOPN->val.nt_val = DIVOp;
 
         setASTChild(lowOPN, asTree);
-        setASTChild(lowOPN, inputNode2);
+        
 
         TREENODE childNode3 = getParseChild(parseTree, 2);
-        ASTNODE inputNode3 = doRecursion(childNode3, lowOPN); // arrTerm2(2).addr_syn
-
-        return inputNode3;
+        ASTNODE inputNode3 = doRecursion(childNode3, inputNode2); // arrTerm2(2).addr_syn
+        setASTChild(lowOPN, inputNode3);
+        return lowOPN;
     
     }
     else if( production_rule == 100)
@@ -1641,7 +1644,7 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         ASTNODE inputNode2 =  doRecursion(childNode3, NULL); // <statements>.addr_syn
         ASTNODE inputNode3 =  doRecursion(childNode4, NULL); // START
         ASTNODE inputNode4 =  doRecursion(childNode5, NULL); // END
-        printf("%d %d\n", inputNode3->line_no, inputNode4->line_no);
+        // printf("%d %d\n", inputNode3->line_no, inputNode4->line_no);
         ASTNODE forIDnRangeN = (ASTNODE) malloc(sizeof(struct ASTNode));
         forIDnRangeN->tnt = 1;
         forIDnRangeN->val.nt_val = forIDnRangeOp;

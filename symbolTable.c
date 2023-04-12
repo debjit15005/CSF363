@@ -36,7 +36,11 @@ void printLocalTables(SYMTABLE htable);
 RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable);
 void markAllID(ASTNODE asTree, SYMTABLE currTable);
 void doOtherModules(ASTNODE searchOtherMod);
-void printParaList(SymTableEntry list[], char* modName);
+void printParaList(SymTableEntry list[], char* modName, int size);
+
+int forArray[10] = {0};
+int forArrayIndex = -1;
+
 
 int getHashIndex(SYMTABLE htable, char* key, int hashed)
 {
@@ -221,7 +225,6 @@ int searchList(SymTableEntry list[], char* key) // -1 if not present else gives 
     return -1;
 }
 
-
 // If type = -1 returned then we received error
 RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
 {
@@ -264,11 +267,16 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 }
                 else e1 = gSymTable[index2].ip_list[foundInPara];
             }
-            if(foundInPara != -1|| (recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0))
+            if(foundInPara != -1 || (recurseTable != NULL && strcmp(asTree->lexeme, e1.lexeme) == 0))
             {
                 node->type = e1.type;
                 node->isArray = e1.isArray;
-                node->isFor = e1.isFor;
+                
+                if(e1.isFor == 1)
+                {
+                    node->isFor = e1.isFor;
+                    node->type = -2;
+                }
                 if(e1.isOp == 1)
                 {
                     SymTableEntry* OPLIST = gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].op_list;
@@ -288,7 +296,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 printf("\033[0;31mLINE %d ERROR VARIABLE %s NOT DECLARED \033[0m \n", asTree->line_no, asTree->lexeme);
                 node->type = -1;
             } 
-            
+            // printf("%s for %d\n", e1.lexeme,  node->isFor); 
         }
         return node;
     }
@@ -383,20 +391,22 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         RECURSESTRUCT type2 = populateChildTable(child2, currTable);
         if(type1->type != -1 && type2->type != -1)
         {
-            if(type1->type != type2->type)
+            // printf("in assign %s %d", child1->lexeme, type1->isFor);
+            if(type1->isFor == 1)
             {
-                printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", child1->line_no); // If LHS and RHS are not of same type / same array type
-                node->type = -1;
+                forArray[forArrayIndex] = 1;
+                node->type = -2; // Special case when we want to give this to FOR construct for error
             }
-            else if(type1->isFor == 1)
+            else if(type1->type != type2->type)
             {
-                // printf("\033[0;31mLINE %d ERROR Cannot reassign for loop variable \033[0m \n"); // If LHS and RHS are not of same type / same array type
-                node->type = -2; // Special case when we want to give this to for construct for error
-                return node;
+                // printf("%d\n", type1->type);
+                // printf("%d\n", type2->type);
+                printf("\033[0;31mLINE %d ERROR Type Mismatch LHS_type != RHS_type \033[0m \n", child1->line_no); // If LHS and RHS are not of same type / same array type
+                node->type = -1;
             }
             else if((type1->isArray ^ type2->isArray == 1) && (child1->val.nt_val != arrElement && child2->val.nt_val != arrElement ))
             {
-                printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", child1->line_no); // If of the form A := B where A is an integer and B is an Array of integer
+                printf("\033[0;31mLINE %d ERROR Type Mismatch One is Array \033[0m \n", child1->line_no); // If of the form A := B where A is an integer and B is an Array of integer
                 node->type = -1;
             }
             else if(type1->isArray == 1 && type2->isArray == 1)
@@ -405,6 +415,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 {
                     if((atoi(type1->r2)-atoi(type1->r1)) != (atoi(type2->r2)-atoi(type2->r1))) // Check for bounds matching
                     {
+                        // printf("%d %d\n", atoi(type1->r2), atoi(type1->r1));
                         printf("\033[0;31mLINE %d ERRO Type Mismatch (Structurally Unequivalent) \033[0m \n", child1->line_no);
                         node->type = -1;
                     }
@@ -417,27 +428,34 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
     }
     else if(currNT == arrElement)
     {
+        // printT(getASTChild(asTree, 1)->val.t_val);
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0), currTable);
         RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), currTable);
         
-        if(type1->type == -1 || type2->type == -1) node->type = -1;
-        else if( type2->type != INTEGER) // CAN BE REMOVED
+        if(getASTChild(asTree, 1)->val.nt_val == signedNum)
         {
-            node->type = -1;
-            printf("\033[0;31mLINE %d ERROR Type Mismatch (Structurally Unequivalent) \033[0m \n", type2->line);
+            ASTNODE num2 = getASTChild(getASTChild(asTree, 1), 0);
+            if(num2->val.t_val == PLUS)
+            {
+                type2->numval = atoi(num2->nextSibling->lexeme);
+            }
+            else if(num2->val.t_val == MINUS)
+            {
+                type2->numval = -1*atoi(num2->nextSibling->lexeme);
+            }
         }
+        
+
+        if(type1->type == -1 || type2->type == -1) node->type = -1;
         else
         {
-            if(type1->isStatic == 1 && (atoi(type1->r1) <=  type2->numval && type2->numval <= atoi(type1->r2)))
+            if(type1->isStatic == 1 && (atoi(type1->r1) >  type2->numval || type2->numval > atoi(type1->r2)))
             {
-                // printf("Valid\n");
-            }
-            else
-            {
-                type1->type = -1;
+                // printf("%d %d %d", type2->numval, atoi(type1->r1), atoi(type1->r2) );
+                node->type = -1;
                 printf("\033[0;31mLINE %d ERROR Index not in bounds \033[0m \n", type1->line);
             }
-            return type1;
+            else node->type = type1->type;
         }
         
     }
@@ -445,8 +463,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
     {
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0), currTable);
         RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), currTable);
-        if(type1->type == -1 || type2->type== -1) node->type = -1;
-        
+        // if(type1->type == -1 || type2->type== -1) node->type = -1;
     }
     else if(currNT == PLUSOp || currNT == MINUSOp || currNT == MULOp || currNT == DIVOp)
     {
@@ -454,31 +471,27 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         ASTNODE child2 = getASTChild(asTree, 1);
         RECURSESTRUCT type1 = populateChildTable(child1, currTable);
         RECURSESTRUCT type2 = populateChildTable(child2, currTable);
+        // printNT(currNT);
+        // printf(" ");
+        // printT(type1->type);
+        // printT(type2->type);
+        // printf("\n");
         if(type1->type == -1 || type2->type == -1)
         {
             node->type = -1;
         }
         else
         {
-            if(currNT == DIVOp) // If division operation then check divide by 0
+            if((type1->isArray == 1 && child1->val.nt_val != arrElement) || (type2->isArray == 1 && child2->val.nt_val != arrElement))
             {
-                if(type2->type == INTEGER && type2->numval == 0)
-                {
-                    printf("\033[0;31mLINE %d ERROR Cannot divide by 0 \033[0m \n", type2->line);
-                    node->type = -1;
-                }
+                printf("\033[0;31mLINE %d ERROR Cannot do arithmetic operations on Array \033[0m \n", type2->line);
+                node->type = -1;
             }
             else
             {
-                 if((type1->isArray == 1 && child1->val.nt_val != arrElement) || (type2->isArray == 1 && child2->val.nt_val != arrElement))
-                {
-                    printf("\033[0;31mLINE %d ERROR Cannot do arithmetic operations on Array \033[0m \n", type2->line);
-                }
-                else if(type1->type != type2->type)
-                {
-                    printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", type2->line);
-                }
-            }
+                if(currNT == DIVOp) node->type == REAL;
+                else node->type = type1->type;
+            } 
         }
     }
     else if(currNT == uniOp)
@@ -506,7 +519,12 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
     {
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0), currTable);
         RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), currTable);
-        if(type1->type == -1 || type2->type == -1) node->type = -1;
+        if(type1->type == -1 || type2->type == -1)
+        {
+            node->type = -1;
+        } 
+        // printT(type1->type);
+        // printT(type2->type);
         if(type1->type != type2->type)
         {
             printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", type2->line);
@@ -519,6 +537,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 printf("\033[0;31mLINE %d ERROR Cannot compare boolean operands \033[0m \n", type1->line);
                 node->type = -1;
             }
+            else
+            {
+                node->type = BOOLEAN;
+                return node;
+            } 
         }
     }
     else if(currNT == forOp)
@@ -545,10 +568,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             SymTableEntry* IpList = gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].ip_list;
             SymTableEntry* OpList = gSymTable[getHashIndexfromGlobal(gSymTable, currTable->moduleName, -1)].op_list;
             int indx = getHashIndex(currTable, getASTChild(asTree, 0)->firstChild->lexeme, -1);
-            
+            // printf("indx recurse  %d \n", indx);
             if(indx == -1) // If not found in Tree of Symbol Tables
             {
                 indx = searchList(IpList, getASTChild(asTree, 0)->firstChild->lexeme); // Search in I/P List
+                // printf("indx ip %d \n", indx);
                 if(indx != -1)
                 {
                     IpList[indx].isFor = 1;
@@ -557,6 +581,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 else // If not found in I/P List
                 {
                     indx = searchList(OpList, getASTChild(asTree, 0)->firstChild->lexeme); // Search in O/P List
+                    // printf("indx op %d \n", indx);
                     if(indx != -1)
                     {
                         OpList[indx].isFor = 1;
@@ -565,10 +590,11 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 }
             }
             else currTable->entries[indx].isFor = 1;
+            forArray[++forArrayIndex] = 0; // If it gets set to 1 after call then we know for variable got changed
             RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), childTable); // USE THIS TO RECURSIVELY CREATE TREE OF HASHTABLES
-            if(type2->type == -2) printf("\033[0;31mLINE [%d,%d] ERROR Cannot reassign for loop variable \033[0m \n", start, end);
+            
+            if(forArray[forArrayIndex--] == 1) printf("\033[0;31mLINE [%d,%d] ERROR Cannot reassign FOR loop variable \033[0m \n", start, end);
         }
-        
         populateChildTable(getASTChild(asTree, 4), currTable); // To continue after the FOR block is done
     }
     else if(currNT == switchOp)
@@ -722,10 +748,15 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 while(outputPara != NULL)
                 {
                     RECURSESTRUCT type1 = populateChildTable(outputPara, currTable);
+                    if(type1->type == -1)
+                    {
+                        error = 1;
+                        break;
+                    } 
                     saveLine = type1->line;
                     SymTableEntry* OutputParaList = gSymTable[index1].op_list;
                     int paraIndex = -1;
-                    for(int i = 0; i<50; i++)
+                    for(int i = 0; i<gSymTable[index1].sizeOp; i++)
                     {
                         if(OutputParaList[i].valid == 1)
                         {
@@ -747,44 +778,46 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                     currPara++;
                     outputPara = outputPara->firstChild;
                 }
-                if(error != 1 && gSymTable[index1].sizeOp != currPara)
+                if(error == 0)
                 {
-                    printf("\033[0;31mLINE %d ERROR number of output parameters don't match\033[0m \n", saveLine);
-                }
-                error = 0;
-                currPara = 0;
-                ASTNODE inputPara = funcID->nextSibling;
-                while(inputPara != NULL)
-                {
-                    RECURSESTRUCT type1 = populateChildTable(getASTChild(inputPara, 1), currTable);
-                    saveLine = type1->line;
-                    SymTableEntry* InputParaList = gSymTable[index1].ip_list;
-                    int paraIndex = -1;
-                    for(int i = 0; i<50; i++)
+                    if(gSymTable[index1].sizeOp != currPara)
                     {
-                        if(InputParaList[i].valid == 1)
+                        printf("\033[0;31mLINE %d ERROR number of output parameters don't match\033[0m \n", saveLine);
+                    }
+                    currPara = 0;
+                    ASTNODE inputPara = funcID->nextSibling;
+                    while(inputPara != NULL)
+                    {
+                        RECURSESTRUCT type1 = populateChildTable(getASTChild(inputPara, 1), currTable);
+                        saveLine = type1->line;
+                        SymTableEntry* InputParaList = gSymTable[index1].ip_list;
+                        int paraIndex = -1;
+                        for(int i = 0; i<gSymTable[index1].sizeIp; i++)
                         {
-                            if(InputParaList[i].paraNum == currPara) paraIndex = i;
+                            if(InputParaList[i].valid == 1)
+                            {
+                                if(InputParaList[i].paraNum == currPara) paraIndex = i;
+                            }
                         }
+                        if(paraIndex == -1)
+                        {
+                            error = 1;
+                            printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
+                            break;
+                        }
+                        if(type1->type != InputParaList[paraIndex].type)
+                        {
+                            error = 1;
+                            printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
+                            break;
+                        }
+                        currPara++;
+                        inputPara = getASTChild(inputPara, 2);
                     }
-                    if(paraIndex == -1)
+                    if(error != 1 && gSymTable[index1].sizeIp != currPara)
                     {
-                        error = 1;
-                        printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
-                        break;
+                        printf("\033[0;31mLINE %d ERROR number of input parameters don't match\033[0m \n", saveLine);
                     }
-                    if(type1->type != InputParaList[paraIndex].type)
-                    {
-                        error = 1;
-                        printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
-                        break;
-                    }
-                    currPara++;
-                    inputPara = getASTChild(inputPara, 2);
-                }
-                if(error != 1 && gSymTable[index1].sizeIp != currPara)
-                {
-                    printf("\033[0;31mLINE %d ERROR number of input parameters don't match\033[0m \n", saveLine);
                 }
             }
         }
@@ -813,20 +846,16 @@ void printGlobalTable(GLOBALSYMTABLE htable)
     {
         if(htable[i].valid == 1)
         {
-            // printf("Input parameter list:\n");
-            printParaList(htable[i].ip_list, htable[i].lexeme);
-            // printf("Output parameter list:\n");
-            printParaList(htable[i].op_list, htable[i].lexeme);
-            // printf("\n");
-            // printf("Rest:\n");
+            printParaList(htable[i].ip_list, htable[i].lexeme, htable[i].sizeIp);
+            printParaList(htable[i].op_list, htable[i].lexeme, htable[i].sizeOp);
             printLocalTables(htable[i].firstChild);
         }
     }
 }
 
-void printParaList(SymTableEntry list[], char* modName)
+void printParaList(SymTableEntry list[], char* modName, int size)
 {
-    for(int i = 0; i<50; i++)
+    for(int i = 0; i<size; i++)
     {
         if(list[i].valid == 1)
         {
