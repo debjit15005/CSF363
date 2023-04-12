@@ -1,6 +1,6 @@
 #ifndef HTABLE_H
 #define HTABLE_H
-#define MODULO 35
+#define MODULO 300
 #include "lexerDef.h"
 
 int hashcode(char* key);

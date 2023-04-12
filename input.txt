@@ -1,18 +1,19 @@
-<<module compute1>>
-takes input [x:integer, y: boolean, p:real];
-returns [m:integer, z:real, u: boolean];
+** Test case 1: Testing symbol table creation for variable declaration and redeclaration checks**
+** Single level nesting using primitive data types**
+
+
+<<module var_demo>>
+takes input [x:integer, w: boolean];
+returns [m:integer];
 start
-	while(x)
+	declare x: integer;
+	for(x in 1..2)
 	start
-		declare mew: boolean;
-		x:= 2;
+		x:= 3;
 	end
-	
 end
 
 <<<driver program>>>
 start
-	declare A:array[1..15] of real;
-	declare k:integer;
-	declare s:real;
+	declare v_1_2_3:integer;
 end
