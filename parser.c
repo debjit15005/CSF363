@@ -16,7 +16,7 @@ ID:2020A7PS0986P    Name: Nidhish Parekh
 
 int CURRENT_ARRAY_SIZE1 = 30;
 int CURRENT_ARRAY_SIZE2 = 10;
- 
+int error_flag = 0;
 
 int** parseTable;
 NODE* firsts;
@@ -24,7 +24,7 @@ NODE* follows;
 NODE doFirsts(int i);
 NODE doFollows(int i);
 TREENODE t1; // The parse tree
-char** reqLexeme;
+tokenInfo** reqLexeme;
 SLIM scopeStack;
 int parseTreeNodeCount;
 
@@ -122,7 +122,7 @@ void printParseTable(){
 ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSyntacticErrors){
     int rule_no = 0;
     
-    tokenInfo * readToken = runLexerForParser(testcaseFile, 10);
+    tokenInfo* readToken = runLexerForParser(testcaseFile, 10);
     // readToken = runLexerForParser(testcaseFile,10);
     
     Stack* mainStack = newStack(); 
@@ -135,7 +135,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
     // printf("\n");
 
     
-    reqLexeme = (char **) malloc(CURRENT_ARRAY_SIZE1*sizeof(char *));
+    reqLexeme = (tokenInfo **) malloc(CURRENT_ARRAY_SIZE1*sizeof(tokenInfo *));
     int* reqLineS = (int *) malloc(CURRENT_ARRAY_SIZE2*sizeof(int));
     int lexemeIndex = 0;
     int lineIndexS = -1;
@@ -146,7 +146,6 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
     t1 = initTree();
     t1->line_no = readToken->line_num;
     char lexeme[MAX_LEXEME];
-    
 
     if(readToken->token == ENDOFFILE)
     {
@@ -180,8 +179,8 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                 }
                 else
                 {
-                    printf("ERROR: Terminal Mismatch\n\n");
-                    ; // CHECK
+                    printf("ERROR: Terminal Mismatch\n\n");; // CHECK
+                    error_flag = 1;
                 }  
                 readToken = runLexerForParser(testcaseFile,10);
                 // CHECK FOR NULL 
@@ -193,17 +192,38 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                 // pop(mainStack);
                 parseTreeNodeCount++;
                 token t = readToken->token;
-                if(t == ID || t == NUM || t == RNUM)
+                if(t == ID || t == NUM || t == RNUM || t == CASE || t == DEFAULT)
                 {
                     if(lexemeIndex == CURRENT_ARRAY_SIZE1)
                     {
                         CURRENT_ARRAY_SIZE1 *= 2;
-                        reqLexeme = (char **) realloc(reqLexeme, CURRENT_ARRAY_SIZE1*sizeof(char *));
+                        reqLexeme = (tokenInfo **) realloc(reqLexeme, CURRENT_ARRAY_SIZE1*sizeof(tokenInfo*));
                     } 
-                    reqLexeme[lexemeIndex] = (char *) malloc(MAX_LEXEME);
-                    if(t == ID) strcpy(reqLexeme[lexemeIndex++], readToken->tv.lexeme);
-                    else if(t == NUM) sprintf(reqLexeme[lexemeIndex++], "%lld", readToken->tv.i_val);
-                    else sprintf(reqLexeme[lexemeIndex++], "%f", readToken->tv.f_val);
+                    reqLexeme[lexemeIndex] = (tokenInfo *) malloc(sizeof(tokenInfo));
+                    if(t == ID || t == DEFAULT)
+                    {
+                        strcpy(reqLexeme[lexemeIndex]->tv.lexeme, readToken->tv.lexeme);
+                        reqLexeme[lexemeIndex]->line_num = readToken->line_num;
+                        lexemeIndex++;
+                    } 
+                    else if(t == CASE)
+                    {
+                        strcpy(reqLexeme[lexemeIndex]->tv.lexeme, readToken->tv.lexeme);
+                        reqLexeme[lexemeIndex]->line_num = readToken->line_num;
+                        lexemeIndex++;
+                    }
+                    else if(t == NUM)
+                    {
+                        sprintf(reqLexeme[lexemeIndex]->tv.lexeme, "%lld", readToken->tv.i_val);
+                        reqLexeme[lexemeIndex]->line_num = readToken->line_num;
+                        lexemeIndex++;
+                    } 
+                    else if(t == RNUM)
+                    {
+                        sprintf(reqLexeme[lexemeIndex]->tv.lexeme, "%f", readToken->tv.f_val);
+                        reqLexeme[lexemeIndex]->line_num = readToken->line_num;
+                        lexemeIndex++;
+                    } 
                 }
                 if(t == START)
                 {
@@ -261,41 +281,36 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                         while(reachEnd(mainStack)==1 && top(mainStack)->val.t_val != ENDOFFILE ){
                             pop(mainStack);
                         }
+                        error_flag = 1;
                         sync_flag = 1;
                     }
                     else{
-                        
                         sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
-
                         if(sync_flag == 0){
+
                             if(printSyntacticErrors == 1){
                                 printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
                                 printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
                             }
                             
+
+
                             sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
                             readToken = runLexerForParser(testcaseFile,10);
+                            error_flag = 1;
                         }
-                        else
-                        {
-                            push(mainStack, temp);
-                        }
-
+                        else push(mainStack, temp);
                     }
-
                 }
             }
             while(sync_flag == 0);
         }
         else{
             printf("ERROR: Stack emptied before input consumed\n");
-            
+            error_flag = 1;
         }
     }
     printf("\n");
-    // printTree(t1, 0);
-    // for(int i = 0; i<lineIndexS; i++) printf("sTART is %d\n", reqLineS[i]);
-    // printf("\n***********************************\n");
     ASTNODE temp = createAST(t1, reqLexeme);
     freeTree(t1);
     return temp;

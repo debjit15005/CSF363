@@ -12,9 +12,10 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include "ast.h"
 #include "parserDef.h"
 
-extern char** reqLexeme;
+extern tokenInfo** reqLexeme;
 extern SLIM scopeStack;
 extern int parseTreeNodeCount;
+
 
 void automaticFirsts();
 void automaticFollows();
