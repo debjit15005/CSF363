@@ -53,7 +53,7 @@ int main(int argc, char*argv[]){
         printf("Press 4 to display the amount of allocated memory and number of nodes in parse tree and abstract syntax tree\n");
         printf("Press 5 to print the symbol table\n");
         printf("Press 6 to print total memory requirement for each function\n");
-		printf("Press 7 to print the type expressions and width of array variables\n");
+		printf("Press 7 to print the type expressions of array variables\n");
         printf("Press 8 to compile and verify syntactic and semantic correctness of input source code and report any syntax, type checking and semantic errors, and to measure total time taken by compiler\n");
         printf("Press 9 to generate assembly code\n");
 		printf("\n");
@@ -73,7 +73,9 @@ int main(int argc, char*argv[]){
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
+                printTree(t1,0);
+                
 				break;
 			}
             case 3:{//done
@@ -82,7 +84,7 @@ int main(int argc, char*argv[]){
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 printAST(asTree,0);
 				break;
 			}
@@ -92,7 +94,7 @@ int main(int argc, char*argv[]){
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 int count = countNodes(asTree);
                 printf("Parse tree number of nodes = %d, Allocated Memory = %ld bytes\n", parseTreeNodeCount, sizeof(struct TreeNode)*parseTreeNodeCount);
                 printf("Abstract Syntax tree number of nodes = %d, Allocated Memory = %ld bytes\n", count, (long int) (sizeof(struct ASTNode)*count));
@@ -107,23 +109,23 @@ int main(int argc, char*argv[]){
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 initSymTable();
                 createSymTable(asTree);
                 printGlobalTable(gSymTable);
 
 				break;
 			}
-            case 6:{//done
+            case 6:{
 				buildGrammar();
 				automaticFirsts();
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 initSymTable();
                 createSymTable(asTree);
-                printGlobalTable(gSymTable);
+                printActivationRecord(gSymTable);
 
 				break;
 			}
@@ -133,21 +135,33 @@ int main(int argc, char*argv[]){
                 automaticFollows();
                 createParseTable();
                 int** parseTable = getParseTable();
-                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 initSymTable();
                 createSymTable(asTree);
                 printArrays(gSymTable);
 
 				break;
 			}
+           
 
-			case -1:{
+			case 8:{
 				clock_t start_time, end_time;
 				double total_CPU_time, total_CPU_time_in_seconds;
 
 				start_time = clock();
-				runLexer(argv[1], atoi(argv[3]));
-				runParser();
+
+				buildGrammar();
+				automaticFirsts();
+                automaticFollows();
+                createParseTable();
+                int** parseTable = getParseTable();
+                ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 1);
+                if(syntacticError == 0)
+                {
+                    initSymTable();
+                    createSymTable(asTree);
+                }
+
 				end_time = clock();
 
 				total_CPU_time = (double) (end_time - start_time);

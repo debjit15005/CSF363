@@ -15,7 +15,9 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 extern tokenInfo** reqLexeme;
 extern SLIM scopeStack;
 extern int parseTreeNodeCount;
-
+extern int printErrors;
+extern int syntacticError;
+extern TREENODE t1;
 
 void automaticFirsts();
 void automaticFollows();

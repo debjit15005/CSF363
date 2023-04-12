@@ -144,7 +144,7 @@ SYMTABLE getfromGlobal(char* key, GLOBALSYMTABLE htable){
 		if(strcmp(htable[hashed].lexeme, key) == 0) return htable[hashed].firstChild;
 		hashed = (++hashed) % MODULO;
 	}
-    printf("\033[0;31mERROR NO SYMTABLE WITH THIS MODULE NAME \033[0m \n");
+    if(printErrors) printf("\033[0;31mERROR NO SYMTABLE WITH THIS MODULE NAME \033[0m \n");
 	return NULL; // REPORT ERROR IF YOU GET NO SYMTABLE WITH THIS MODULE NAME
 }
 
@@ -177,7 +177,7 @@ void createSymTable(ASTNODE asTree)
     {
         if(insertGlobalSym(gSymTable, searchModDecl->firstChild->lexeme, -1) == -1)
         {
-            printf("\033[0;31mLINE %d ERROR %s MODULE NAME ALREADY EXISTS \033[0m \n", searchModDecl->firstChild->line_no, searchModDecl->firstChild->lexeme);
+            if(printErrors) printf("\033[0;31mLINE %d ERROR %s MODULE NAME ALREADY EXISTS \033[0m \n", searchModDecl->firstChild->line_no, searchModDecl->firstChild->lexeme);
         }
         SYMTABLE childTable = getfromGlobal(searchModDecl->firstChild->lexeme, gSymTable);
         strcpy(childTable->moduleName, searchModDecl->firstChild->lexeme);
@@ -293,7 +293,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             }
             else
             {
-                printf("\033[0;31mLINE %d ERROR VARIABLE %s NOT DECLARED \033[0m \n", asTree->line_no, asTree->lexeme);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR VARIABLE %s NOT DECLARED \033[0m \n", asTree->line_no, asTree->lexeme);
                 node->type = -1;
             } 
             // printf("%s for %d\n", e1.lexeme,  node->isFor); 
@@ -349,7 +349,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             int entryIndex = insertLocalSym(currTable,varID->lexeme,-1);
             if(entryIndex == -1) // IF THE ID ALREADY EXISTS
             {
-                printf("\033[0;31mLINE %d ERROR %s is being redeclared \033[0m \n", varID->line_no, varID->lexeme); // If a variable is being redeclared
+                if(printErrors) printf("\033[0;31mLINE %d ERROR %s is being redeclared \033[0m \n", varID->line_no, varID->lexeme); // If a variable is being redeclared
                 varID = varID->firstChild;
                 continue; 
             }
@@ -401,12 +401,12 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             {
                 // printf("%d\n", type1->type);
                 // printf("%d\n", type2->type);
-                printf("\033[0;31mLINE %d ERROR Type Mismatch LHS_type != RHS_type \033[0m \n", child1->line_no); // If LHS and RHS are not of same type / same array type
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Type Mismatch LHS_type != RHS_type \033[0m \n", child1->line_no); // If LHS and RHS are not of same type / same array type
                 node->type = -1;
             }
             else if((type1->isArray ^ type2->isArray == 1) && (child1->val.nt_val != arrElement && child2->val.nt_val != arrElement ))
             {
-                printf("\033[0;31mLINE %d ERROR Type Mismatch One is Array \033[0m \n", child1->line_no); // If of the form A := B where A is an integer and B is an Array of integer
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Type Mismatch One is Array \033[0m \n", child1->line_no); // If of the form A := B where A is an integer and B is an Array of integer
                 node->type = -1;
             }
             else if(type1->isArray == 1 && type2->isArray == 1)
@@ -416,7 +416,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                     if((atoi(type1->r2)-atoi(type1->r1)) != (atoi(type2->r2)-atoi(type2->r1))) // Check for bounds matching
                     {
                         // printf("%d %d\n", atoi(type1->r2), atoi(type1->r1));
-                        printf("\033[0;31mLINE %d ERRO Type Mismatch (Structurally Unequivalent) \033[0m \n", child1->line_no);
+                        if(printErrors) printf("\033[0;31mLINE %d ERRO Type Mismatch (Structurally Unequivalent) \033[0m \n", child1->line_no);
                         node->type = -1;
                     }
                 }
@@ -453,7 +453,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             {
                 // printf("%d %d %d", type2->numval, atoi(type1->r1), atoi(type1->r2) );
                 node->type = -1;
-                printf("\033[0;31mLINE %d ERROR Index not in bounds \033[0m \n", type1->line);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Index not in bounds \033[0m \n", type1->line);
             }
             else node->type = type1->type;
         }
@@ -484,7 +484,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         {
             if((type1->isArray == 1 && child1->val.nt_val != arrElement) || (type2->isArray == 1 && child2->val.nt_val != arrElement))
             {
-                printf("\033[0;31mLINE %d ERROR Cannot do arithmetic operations on Array \033[0m \n", type2->line);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Cannot do arithmetic operations on Array \033[0m \n", type2->line);
                 node->type = -1;
             }
             else
@@ -527,14 +527,14 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         // printT(type2->type);
         if(type1->type != type2->type)
         {
-            printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", type2->line);
+            if(printErrors) printf("\033[0;31mLINE %d ERROR Type Mismatch \033[0m \n", type2->line);
             node->type = -1;
         }
         else
         {
             if((currNT == LTOp || currNT == LEOp || currNT == GTOp || currNT == GEOp)&&(type1->type == BOOLEAN))
             {
-                printf("\033[0;31mLINE %d ERROR Cannot compare boolean operands \033[0m \n", type1->line);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Cannot compare boolean operands \033[0m \n", type1->line);
                 node->type = -1;
             }
             else
@@ -560,7 +560,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         RECURSESTRUCT type1 = populateChildTable(getASTChild(asTree, 0)->firstChild, currTable);
         if(type1->type == -1 || type1->type != INTEGER)
         {
-            if(type1->type != -1) printf("\033[0;31mLINE [%d,%d] ERROR For loop variable must be integer \033[0m \n", start, end);
+            if(type1->type != -1 && printErrors == 1) printf("\033[0;31mLINE [%d,%d] ERROR For loop variable must be integer \033[0m \n", start, end);
             node->type = -1;
         } 
         else
@@ -593,7 +593,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             forArray[++forArrayIndex] = 0; // If it gets set to 1 after call then we know for variable got changed
             RECURSESTRUCT type2 = populateChildTable(getASTChild(asTree, 1), childTable); // USE THIS TO RECURSIVELY CREATE TREE OF HASHTABLES
             
-            if(forArray[forArrayIndex--] == 1) printf("\033[0;31mLINE [%d,%d] ERROR Cannot reassign FOR loop variable \033[0m \n", start, end);
+            if(forArray[forArrayIndex--] == 1 && printErrors == 1) printf("\033[0;31mLINE [%d,%d] ERROR Cannot reassign FOR loop variable \033[0m \n", start, end);
         }
         populateChildTable(getASTChild(asTree, 4), currTable); // To continue after the FOR block is done
     }
@@ -605,7 +605,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
         int endSwitch = childNode->nextSibling->nextSibling->nextSibling->line_no;
         if((type1->isArray == 1 && childNode->val.nt_val != arrElement)||(type1->type == REAL))
         {
-            printf("\033[0;31mLINE [%d,%d] ERROR invalid switch variable\033[0m \n", startSwitch, endSwitch);
+            if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR invalid switch variable\033[0m \n", startSwitch, endSwitch);
             node->type = -1;
         }
         else if(type1->type == BOOLEAN || type1->type == INTEGER)
@@ -631,17 +631,17 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 
                 if(switchVal == NUM ^ type1->type == INTEGER)
                 {
-                    printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
+                    if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
                     node->type = -1;
                 }
                 else if ((switchVal == TRUE || switchVal == FALSE) ^ (type1->type == BOOLEAN))
                 {
-                    printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
+                    if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
                     node->type = -1;
                 }
                 else if(switchVal == REAL)
                 {
-                    printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
+                    if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR case statement value doesn't match type\033[0m \n", caseStart, caseEnd-1);
                     node->type = -1;
                 }
                 
@@ -659,12 +659,12 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             }
             if(type1->type == INTEGER && caseNode->nextSibling->firstChild->val.t_val == EPSILON) // no default statement
             {
-                printf("\033[0;31mLINE [%d,%d] ERROR default statement required\033[0m \n", startSwitch, endSwitch);
+                if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR default statement required\033[0m \n", startSwitch, endSwitch);
                 node->type = -1;
             }
             else if(type1->type == BOOLEAN && caseNode->nextSibling->firstChild->val.t_val != EPSILON)
             {
-                printf("\033[0;31mLINE [%d,%d] ERROR default statement not required - Invalid Syntax\033[0m \n", startSwitch, endSwitch);
+                if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR default statement not required - Invalid Syntax\033[0m \n", startSwitch, endSwitch);
                 node->type = -1;
             }
             else // default statement
@@ -733,12 +733,12 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
             ASTNODE funcID = optN->nextSibling;
             if(strcmp(funcID->lexeme, currTable->moduleName) == 0) // TODO: Should there be a else block here?
             {
-                printf("\033[0;31mLINE %d ERROR Function cannot call itself\033[0m \n", funcID->line_no);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR Function cannot call itself\033[0m \n", funcID->line_no);
             }
             int index1 = getHashIndexfromGlobal(gSymTable, funcID->lexeme, -1);
             if(index1 == -1)
             {
-                printf("\033[0;31mLINE %d ERROR function not found\033[0m \n", funcID->line_no);
+                if(printErrors) printf("\033[0;31mLINE %d ERROR function not found\033[0m \n", funcID->line_no);
             }
             else
             {
@@ -766,13 +766,13 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                     if(paraIndex == -1)
                     {
                         error = 1;
-                        printf("\033[0;31mLINE %d ERROR output parameters don't match\033[0m \n", type1->line);
+                        if(printErrors) printf("\033[0;31mLINE %d ERROR output parameters don't match\033[0m \n", type1->line);
                         break;
                     }
                     if(type1->type != OutputParaList[paraIndex].type)
                     {
                         error = 1;
-                        printf("\033[0;31mLINE %d ERROR output parameters don't match\033[0m \n", type1->line);
+                        if(printErrors) printf("\033[0;31mLINE %d ERROR output parameters don't match\033[0m \n", type1->line);
                         break;
                     }
                     currPara++;
@@ -782,7 +782,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                 {
                     if(gSymTable[index1].sizeOp != currPara)
                     {
-                        printf("\033[0;31mLINE %d ERROR number of output parameters don't match\033[0m \n", saveLine);
+                        if(printErrors) printf("\033[0;31mLINE %d ERROR number of output parameters don't match\033[0m \n", saveLine);
                     }
                     currPara = 0;
                     ASTNODE inputPara = funcID->nextSibling;
@@ -802,13 +802,13 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                         if(paraIndex == -1)
                         {
                             error = 1;
-                            printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
+                            if(printErrors) printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
                             break;
                         }
                         if(type1->type != InputParaList[paraIndex].type)
                         {
                             error = 1;
-                            printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
+                            if(printErrors) printf("\033[0;31mLINE %d ERROR input parameters don't match\033[0m \n", type1->line);
                             break;
                         }
                         currPara++;
@@ -816,7 +816,7 @@ RECURSESTRUCT populateChildTable(ASTNODE asTree, SYMTABLE currTable)
                     }
                     if(error != 1 && gSymTable[index1].sizeIp != currPara)
                     {
-                        printf("\033[0;31mLINE %d ERROR number of input parameters don't match\033[0m \n", saveLine);
+                        if(printErrors) printf("\033[0;31mLINE %d ERROR number of input parameters don't match\033[0m \n", saveLine);
                     }
                 }
             }
@@ -841,7 +841,7 @@ ASTNODE searchFor(ASTNODE asTree, NT key)
 
 void printGlobalTable(GLOBALSYMTABLE htable)
 {
-    printf("%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n","var","module","scope","type","isArray","isStatic","ArrayRange","width","offset","nesting level");
+    printf("%-10s %-15s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n","var","module","scope","type","isArray","isStatic","ArrayRange","width","offset","nesting level");
     for(int i = 0; i<MODULO; i++)
     {
         if(htable[i].valid == 1)
@@ -861,7 +861,7 @@ void printParaList(SymTableEntry list[], char* modName, int size)
         {
             SymTableEntry currEntry = list[i];
             printf("%-10s ", currEntry.lexeme);
-            printf("%-10s ", modName);
+            printf("%-15s ", modName);
             printf("[%-3d,%-3d]  ", currEntry.scope[0], currEntry.scope[1]); // TODO: ADD scope line
             if(currEntry.type == INTEGER) printf("%-10s ", "INTEGER"); // type
             else if(currEntry.type == REAL) printf("%-10s ", "REAL"); // type
@@ -901,7 +901,7 @@ void printLocalTables(SYMTABLE htable)
             SymTableEntry currEntry = htable->entries[i];
             
             printf("%-10s ", currEntry.lexeme);
-            printf("%-10s ", htable->moduleName);
+            printf("%-15s ", htable->moduleName);
             printf("[%-3d,%-3d]  ", currEntry.scope[0], currEntry.scope[1]); // TODO: ADD scope line
             if(currEntry.type == INTEGER) printf("%-10s ", "INTEGER"); // type
             else if(currEntry.type == REAL) printf("%-10s ", "REAL"); // type
@@ -985,7 +985,7 @@ void doOtherModules(ASTNODE searchOtherMod)
         }
         else
         {
-            printf("\033[0;31mLINE [%d,%d] ERROR %s MODULE NAME ALREADY EXISTS \033[0m \n", start, end, modName);
+            if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR %s MODULE NAME ALREADY EXISTS \033[0m \n", start, end, modName);
             searchOtherMod = searchFor(searchOtherMod, module);
             continue;
         }
@@ -1067,7 +1067,7 @@ void doOtherModules(ASTNODE searchOtherMod)
             }
             else 
             {
-                printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
+                if(printErrors) printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
             }
             ipNode = getASTChild(ipNode, 2);
         }
@@ -1150,7 +1150,7 @@ void doOtherModules(ASTNODE searchOtherMod)
             }
             else 
             {
-                printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
+                if(printErrors) printf("\033[0;31mERROR %s is being redeclared \033[0m \n", keyNode->lexeme); // If a variable is being redeclared
             }
             OpNode = getASTChild(OpNode, 2);
         }
@@ -1171,24 +1171,41 @@ void doOtherModules(ASTNODE searchOtherMod)
         }
         if(outputVariableChanged != 1)
         {
-            printf("\033[0;31mLINE [%d,%d] ERROR Output variables unchanged \033[0m \n", start, end);
+            if(printErrors) printf("\033[0;31mLINE [%d,%d] ERROR Output variables unchanged \033[0m \n", start, end);
         }
         searchOtherMod = searchFor(searchOtherMod, module);
     }
 }
 
 void printArrays(GLOBALSYMTABLE htable){
-    printf("%-10s %-10s %-10s %-15s %-15s %-10s\n", "module", "scope", "var", "array type", "range", "element type"); 
+    printf("%-10s %-15s %-10s %-15s %-15s %-10s\n", "module", "scope", "var", "array type", "range", "element type"); 
     
     for(int i = 0; i < MODULO; i++)
     {
         if(htable[i].valid == 1)
         {
-            SYMTABLE localTable = htable[i].firstChild; 
+            SYMTABLE localTable = htable[i].firstChild;
+            SymTableEntry* inList = htable[i].ip_list;
+            SymTableEntry* outList = htable[i].op_list;
+            for(int j = 0; j < htable[i].sizeIp; j++){
+                if(inList[j].valid && inList[j].isArray){
+                    SymTableEntry var = inList[j];
+                    printf("%-15s ", localTable->moduleName);
+                    printf("%-3d - %-3d  ", var.scope[0], var.scope[1]);
+                    printf("%-10s", var.lexeme);
+                    if(var.isStatic) printf("%-15s", "static array");
+                    else printf("%-15s", "dynamic array");
+                    printf("[%-5s,%-5s]  ", var.r1, var.r2);
+                    if(var.type == 0) printf("%-10s ", "INT");
+                    else if(var.type == 1) printf("%-10s ", "REAL");
+                    else printf("%-10s ", "BOOLEAN"); 
+                    printf("\n");
+                }
+            } 
             for(int j = 0; j < MODULO; j++){
                 if(localTable->entries[j].valid && localTable->entries[j].isArray){
                     SymTableEntry var = localTable->entries[j];
-                    printf("%-10s ", localTable->moduleName);
+                    printf("%-15s ", localTable->moduleName);
                     printf("%-3d - %-3d  ", var.scope[0], var.scope[1]);
                     printf("%-10s", var.lexeme);
                     if(var.isStatic) printf("%-15s", "static array");
@@ -1200,6 +1217,42 @@ void printArrays(GLOBALSYMTABLE htable){
                     printf("\n");
                 }
             }
+            for(int j = 0; j < htable[i].sizeOp; j++){
+                if(outList[j].valid && outList[j].isArray){
+                    SymTableEntry var = outList[j];
+                    printf("%-15s ", localTable->moduleName);
+                    printf("%-3d - %-3d  ", var.scope[0], var.scope[1]);
+                    printf("%-10s", var.lexeme);
+                    if(var.isStatic) printf("%-15s", "static array");
+                    else printf("%-15s", "dynamic array");
+                    printf("[%-5s,%-5s]  ", var.r1, var.r2);
+                    if(var.type == 0) printf("%-10s ", "INT");
+                    else if(var.type == 1) printf("%-10s ", "REAL");
+                    else printf("%-10s ", "BOOLEAN"); 
+                    printf("\n");
+                }
+            } 
         }
+    }
+
+  
+}
+
+void printActivationRecord(GLOBALSYMTABLE gSymTable) // INSIDE Symboltable.c
+{
+    for(int i = 0; i<MODULO; i++)
+    {
+        if(gSymTable[i].valid == 1)
+        {
+            int calculate = 0;
+            for(int j = 0; j<MODULO; j++)
+            {
+                if(gSymTable[i].firstChild->entries[j].valid == 1)
+                {
+                    calculate += gSymTable[i].firstChild->entries[j].width;
+                }
+            }
+            printf("Activation record is %s %d\n", gSymTable[i].firstChild->moduleName, calculate);
+        }   
     }
 }
