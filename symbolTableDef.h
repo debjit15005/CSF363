@@ -49,10 +49,11 @@ typedef struct {
     SYMTABLE firstChild;
     int valid;
     char lexeme[MAX_LEXEME]; // module name
-    SymTableEntry ip_list[50]; /* CHECK IF THESE ARE NEEDED */
-    SymTableEntry op_list[50]; /* CHECK IF THESE ARE NEEDED */
+    SymTableEntry ip_list[50];
+    SymTableEntry op_list[50];
     int sizeOp; // Number of elements in O/P List
     int sizeIp; // Number of elements in I/P List
+    int isDec; // If it is a module declaration. 1 if module declaration and not called yet, 0 if not declared yet, 2 if declared and called
 } GlobalSymTable;
 
 typedef GlobalSymTable* GLOBALSYMTABLE;
