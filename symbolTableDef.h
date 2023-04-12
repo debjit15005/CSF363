@@ -49,8 +49,8 @@ typedef struct {
     SYMTABLE firstChild;
     int valid;
     char lexeme[MAX_LEXEME]; // module name
-    SYMTABLE ip_list; /* CHECK IF THESE ARE NEEDED */
-    SYMTABLE op_list; /* CHECK IF THESE ARE NEEDED */
+    SymTableEntry ip_list[50]; /* CHECK IF THESE ARE NEEDED */
+    SymTableEntry op_list[50]; /* CHECK IF THESE ARE NEEDED */
     int sizeOp; // Number of elements in O/P List
     int sizeIp; // Number of elements in I/P List
 } GlobalSymTable;

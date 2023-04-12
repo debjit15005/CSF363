@@ -15,9 +15,9 @@
 int hashcode(char* key)
 {
     int len = strlen(key);
-    unsigned long hashed = 17; //CHECK IF THIS HASH FUNCTION IS CORRECT
+    unsigned long hashed=7;
     for(int i=0; i<len; i++){
-        hashed = ((hashed<<5)+hashed) + key[i];
+        hashed = hashed*31 + key[i];
     }
     return hashed%MODULO;
 }
