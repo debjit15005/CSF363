@@ -2,6 +2,19 @@
 #define HTABLE_C
 #include "lexer.h"
 #include "hashtable.h"
+/*
+Group No. : 42
+ID: 2020A7PS1214P	Name: Darshan Abhaykumar
+ID: 2020A7PS0970P	Name: Debjit Kar
+ID:2020A7PS0986P	Name: Nidhish Parekh
+*/
+
+/*
+	This is the menu driven file. To begin executing the code 
+	1> Type 'make'
+	2> Type './runCompiler <input_file> <parseTreeOutput> size_of_buffer'
+*/
+
 // ------------------------------------------
 // TODO: Include in lexer.h later
 // ------------------------------------------
