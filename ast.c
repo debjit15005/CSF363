@@ -19,6 +19,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 //char** reqLexeme;
 int currIndex = 0;
 int lineIndexS = 0;
+int astNodeCount;
 
 ASTNODE createAST(TREENODE parseTree, char** receivedLexeme)
 {
@@ -1853,4 +1854,19 @@ ASTNODE doRecursion(TREENODE parseTree, ASTNODE asTree)
         return asTree;
     }
     return node;
+}
+
+int countNodes(ASTNODE node){
+    while (node != NULL)
+    {
+        astNodeCount ++;
+        if (node->firstChild != NULL)
+        {
+            
+            countNodes(node->firstChild);
+        }
+        node = node->nextSibling;
+    }
+
+    return (int) astNodeCount*0.8;
 }

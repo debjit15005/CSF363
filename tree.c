@@ -78,6 +78,7 @@ void leftmostDerive(NODE deriv, TREENODE t1, int line_no, int rule_no)
             if(temp->tnt == 0) temp->val.t_val = deriv->val.t_val;
             else temp->val.nt_val = deriv->val.nt_val;
             
+
             curr->firstChild = temp;
             curr = curr->firstChild;
             deriv = deriv->next;

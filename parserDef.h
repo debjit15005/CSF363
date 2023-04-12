@@ -1,4 +1,5 @@
 #ifndef PARSEDEF_H
+#define PARSEDEF_H
 #include "grammarDef.h"
 
 struct scopeLim{
