@@ -21,7 +21,7 @@ int main(){
 	// printFollows();
 	createParseTable();
 	int** parseTable = getParseTable();
-	ASTNODE asTree = parseInputSourceCode("input.txt", parseTable);
+	ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
 	printAST(asTree, 0);
 	initSymTable();
 	createSymTable(asTree);

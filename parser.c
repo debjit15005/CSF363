@@ -26,6 +26,7 @@ NODE doFollows(int i);
 TREENODE t1; // The parse tree
 tokenInfo** reqLexeme;
 SLIM scopeStack;
+int parseTreeNodeCount;
 
 // TODO : FREE reqLexeme
 
@@ -118,7 +119,7 @@ void printParseTable(){
     }
 }
 
-ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
+ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSyntacticErrors){
     int rule_no = 0;
     
     tokenInfo* readToken = runLexerForParser(testcaseFile, 10);
@@ -189,6 +190,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
             {
                 // temp = top(mainStack);
                 // pop(mainStack);
+                parseTreeNodeCount++;
                 token t = readToken->token;
                 if(t == ID || t == NUM || t == RNUM || t == CASE || t == DEFAULT)
                 {
@@ -264,6 +266,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
             do{    
                 if(x!=-1){
                     
+                    parseTreeNodeCount++;
                     pushDerivation(mainStack,table[temp->val.nt_val][x]);
                     // printf("Stack: \n");
                     // printStack(mainStack);
@@ -284,8 +287,14 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
                     else{
                         sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
                         if(sync_flag == 0){
-                            printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
-                            // printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
+
+                            if(printSyntacticErrors == 1){
+                                printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
+                                printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
+                            }
+                            
+
+
                             sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
                             readToken = runLexerForParser(testcaseFile,10);
                             error_flag = 1;
@@ -309,24 +318,28 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable){
 
 void automaticFirsts()
 {
+
     firsts = (NODE*) malloc(NT_COUNT * sizeof(NODE));
     for(int i = 0; i<NT_COUNT; i++)
     {
         firsts[i] = (NODE) malloc(RULE_COUNT * sizeof(node));
         firsts[i]->val.nt_val = -1;
         firsts[i]->val.t_val = -1;
+
     }
     for(int i = 0; i<NT_COUNT; i++)
     {
         if(i>=74) continue;
         if(firsts[i]->next == NULL) doFirsts(i);
     }
+
 }
 
 NODE doFirsts(int i)
 {
     for(int j = 0; j<RULE_COUNT; j++)
     {
+        
         RULE curr = table[i][j];
         if(curr == NULL) break;
         NODE firstN = curr->head->next;
@@ -1288,3 +1301,4 @@ void runParser()
 
     
 }
+

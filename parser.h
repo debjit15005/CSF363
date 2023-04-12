@@ -14,7 +14,8 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 
 extern tokenInfo** reqLexeme;
 extern SLIM scopeStack;
-extern int error_flag;
+extern int parseTreeNodeCount;
+
 
 void automaticFirsts();
 void automaticFollows();
@@ -22,7 +23,7 @@ void computeFirsts();
 void computeFollows();
 
 void createParseTable();
-ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable);
+ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSyntacticErrors);
 void printFirsts(void);
 void printFollows(void);
 void printParseTable();
