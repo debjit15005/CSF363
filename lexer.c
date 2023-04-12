@@ -24,6 +24,7 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include <limits.h>
 #include <ctype.h>
 
+int lexicalError;
 int line, b_id, beg_id, forward, begin;
 int BufferSize;
 int charCount = 1, first_load = 1, spill = 0;
@@ -130,12 +131,14 @@ void resetLexeme(int* indexptr){
     }
 }
 
-tokenInfo* getNextToken(){
+tokenInfo* getNextToken(int printErrorInLexer){
     char c; // Stores character pointed by forward pointer in either buffer one or buffer two
+    
     int index = 0;
     int state = 1;
     lexeme = (char*) malloc(MAX_LEXEME);
     t = (tokenInfo*) malloc(sizeof(tokenInfo));
+
     while(state > -1){
         switch(state){
             
@@ -165,7 +168,11 @@ tokenInfo* getNextToken(){
                 else if ((c >= 'a' && c <= 'z')||(c >= 'A' && c <= 'Z') || c == '_')  state = 35;
                 else { 
                     state = 1;
-                    printf("\033[0;31mError: Invalid character : Line Number %d \033[0m  \n", line);
+                    if(printErrorInLexer){
+                        printf("\033[0;31mError: Invalid character : Line Number %d \033[0m  \n", line);
+                        
+                    }
+
                 }
                 break;
             }
@@ -182,7 +189,10 @@ tokenInfo* getNextToken(){
                     long long temp = strtoll(lexeme, NULL, 10);
                     if(temp == LLONG_MAX)
                     {
-                        printf("\033[0;31mError: Integer size too big : Line Number %d \033[0m  \n", line);
+                        if(printErrorInLexer){
+                            printf("\033[0;31mError: Integer size too big : Line Number %d \033[0m  \n", line);
+                            lexicalError = 1;
+                        }
                         state = 1;
                         break;
                     } 
@@ -205,7 +215,7 @@ tokenInfo* getNextToken(){
                     long long temp = strtoll(lexeme, NULL, 10);
                     if(temp == LLONG_MAX)
                     {
-                        printf("\033[0;31mError: Integer size too big : Line Number %d \033[0m  \n", line);
+                        if(printErrorInLexer) {printf("\033[0;31mError: Integer size too big : Line Number %d \033[0m  \n", line); lexicalError = 1;}
                         state = 1;
                         break;
                     }
@@ -215,7 +225,7 @@ tokenInfo* getNextToken(){
                 }
                 else { 
                     state = 1;
-                    printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     retract(1, &index);
                     resetLexeme(&index);
                 }
@@ -257,7 +267,7 @@ tokenInfo* getNextToken(){
                 }
                 else{ 
                     state = 1; 
-                    printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m \n", line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m \n", line); lexicalError = 1;}
                     retract(1, &index);
                     resetLexeme(&index);
                 }
@@ -275,7 +285,7 @@ tokenInfo* getNextToken(){
                     state = 1;
                     retract(1, &index);
                     resetLexeme(&index);
-                    printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m \n", line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m \n", line); lexicalError = 1;}
                 }
                 break;
             }
@@ -435,7 +445,7 @@ tokenInfo* getNextToken(){
                 if(c == '*') state = 28;
                 else if(c == NULL)
                 {
-                    printf("\033[0;31mError: Reached EOF : Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Reached EOF : Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     t->line_num = line;
                     t->token = ENDOFFILE;
                     state = -1;
@@ -471,7 +481,7 @@ tokenInfo* getNextToken(){
                 }
                 else if(c == NULL)
                 {
-                    printf("\033[0;31mError: Reached EOF: Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Reached EOF: Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     t->line_num = line;
                     t->token = ENDOFFILE;
                     state = -1;
@@ -481,7 +491,7 @@ tokenInfo* getNextToken(){
                     state = 1;
                     retract(1, &index);
                     resetLexeme(&index);
-                    printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line); lexicalError = 1;}
                 }
                 break;
             }
@@ -499,7 +509,7 @@ tokenInfo* getNextToken(){
                 }
                 else if(c == NULL)
                 {
-                    printf("\033[0;31m Error: Reached EOF: Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31m Error: Reached EOF: Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     t->line_num = line;
                     t->token = ENDOFFILE;
                     state = -1;
@@ -509,7 +519,7 @@ tokenInfo* getNextToken(){
                     state = 1;
                     retract(1, &index);
                     resetLexeme(&index);
-                    printf("\033[0;31mError: Invalid character : Line Number %d \033[0m  \n", line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid character : Line Number %d \033[0m  \n", line); lexicalError = 1;}
                 }
                 break;
             }
@@ -527,7 +537,7 @@ tokenInfo* getNextToken(){
                 }
                 else if(c == NULL)
                 {
-                    printf("\033[0;31m Error: Reached EOF: Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31m Error: Reached EOF: Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     t->line_num = line;
                     t->token = ENDOFFILE;
                     state = -1;
@@ -535,7 +545,7 @@ tokenInfo* getNextToken(){
                 }
                 else { 
                     state = 1;
-                    printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line);
+                    if(printErrorInLexer) {printf("\033[0;31mError: Invalid pattern : Line Number %d \033[0m  \n",line); lexicalError = 1;}
                     retract(1, &index);
                     resetLexeme(&index);
                 }
@@ -632,7 +642,7 @@ tokenInfo* getNextToken(){
                         charCount = 1;
                         retract(1, &index);
                         resetLexeme(&index);
-                        printf("\033[0;31mError: Len of string too long : Line Number %d \033[0m \n", line);
+                        if(printErrorInLexer) {printf("\033[0;31mError: Len of string too long : Line Number %d \033[0m \n", line); lexicalError = 1;}
                         break;
                     }
                     t->line_num = line;
@@ -934,7 +944,7 @@ void removeComments(char *testcaseFile, char *cleanFile)
     fclose(fp2);
 }
 
-tokenInfo * runLexerForParser(char* testfile, int size)
+tokenInfo * runLexerForParser(char* testfile, int size, int printErrorInLexer)
 {
     if(fp == NULL){
         fp = fopen(testfile,"r");
@@ -942,7 +952,7 @@ tokenInfo * runLexerForParser(char* testfile, int size)
         fp = getStream(fp);
     }
     tokenInfo * parserToken = (tokenInfo *) malloc( sizeof(tokenInfo));
-    parserToken = getNextToken();
+    parserToken = getNextToken(printErrorInLexer);
     // if(parserToken->token == ENDOFFILE)
     // {
     //     freeData();
@@ -957,7 +967,7 @@ void runLexer(char* testfile, int size)
     BufferSize = size;
     fp = getStream(fp);
     tokenInfo * tk = (tokenInfo *) malloc( sizeof(tokenInfo));
-    tk = getNextToken();
+    tk = getNextToken(0);
     while(tk->token != ENDOFFILE)
     {
         printf("\nLine no\tLexeme\ttoken_name\n");
@@ -966,7 +976,7 @@ void runLexer(char* testfile, int size)
         printf("\t");
         printT(tk->token);
         printf("\n");
-        tk = getNextToken();
+        tk = getNextToken(0);
     } 
     freeData();
     // free(tk);

@@ -10,11 +10,13 @@ ID:2020A7PS0986P	Name: Nidhish Parekh
 #include <string.h>
 #include "lexerDef.h" 
 
+extern int lexicalError;
+
 FILE* getStream(FILE *fp);
 tokenInfo* getNextToken();
 void initializeLexerOnce();
 void removeComments(char *testcaseFile, char *cleanFile);
-tokenInfo* runLexerForParser(char* testfile, int size);
+tokenInfo* runLexerForParser(char* testfile, int size, int printErrorInLexer);
 void printToken(tokenInfo* currToken);
 void runLexer(char* testfile, int size);
 void printT(token token);

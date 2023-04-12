@@ -16,7 +16,8 @@ ID:2020A7PS0986P    Name: Nidhish Parekh
 
 int CURRENT_ARRAY_SIZE1 = 30;
 int CURRENT_ARRAY_SIZE2 = 10;
-int error_flag = 0;
+int syntacticError = 0;
+int printErrors;
 
 int** parseTable;
 NODE* firsts;
@@ -119,10 +120,11 @@ void printParseTable(){
     }
 }
 
-ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSyntacticErrors){
+ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printError){
     int rule_no = 0;
+    printErrors = printError;
     
-    tokenInfo* readToken = runLexerForParser(testcaseFile, 10);
+    tokenInfo* readToken = runLexerForParser(testcaseFile, 10, printError);
     // readToken = runLexerForParser(testcaseFile,10);
     
     Stack* mainStack = newStack(); 
@@ -149,7 +151,7 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
 
     if(readToken->token == ENDOFFILE)
     {
-        printf("File is empty\n");
+        if(printError) printf("File is empty\n");
         return NULL;
     }
     while(reachEnd(mainStack))
@@ -179,10 +181,10 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                 }
                 else
                 {
-                    printf("ERROR: Terminal Mismatch\n\n");; // CHECK
-                    error_flag = 1;
+                    if(printError) printf("ERROR: Terminal Mismatch\n\n");; // CHECK
+                    syntacticError = 1;
                 }  
-                readToken = runLexerForParser(testcaseFile,10);
+                readToken = runLexerForParser(testcaseFile,10, printError);
                 // CHECK FOR NULL 
                 continue;
             }
@@ -242,14 +244,14 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                     lineIndexS--;
                 }
                 
-                readToken = runLexerForParser(testcaseFile,10);
+                readToken = runLexerForParser(testcaseFile,10,printError);
                 // printf("Stack: \n");
                 // printStack(mainStack);
                 // printf("\n\n");
 
                 if(reachEnd(mainStack)==0)
                 {
-                    printf("Finished parsing\n");
+                    if(printError) printf("Finished parsing\n");
                 }
                 continue;
             }
@@ -276,28 +278,28 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
                 }
                 else{
                     if(readToken->token == ENDOFFILE){
-                        printf("ERROR: Input consumed but Stack not empty\n\n\n");
+                        if(printError) printf("ERROR: Input consumed but Stack not empty\n\n\n");
                         // printStack(mainStack);
                         while(reachEnd(mainStack)==1 && top(mainStack)->val.t_val != ENDOFFILE ){
                             pop(mainStack);
                         }
-                        error_flag = 1;
+                        syntacticError = 1;
                         sync_flag = 1;
                     }
                     else{
                         sync_flag = findTermInSet(readToken->token,firsts[temp->val.nt_val]);
                         if(sync_flag == 0){
 
-                            if(printSyntacticErrors == 1){
-                                printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
+                            if(printError){
+                                if(printError) printf("ERROR: Syntactic error in line no. %d for token ",readToken->line_num);
                                 printT(readToken->token); printf(" "); printToken(readToken); printf("\n");
                             }
                             
 
 
                             sync_flag = findTermInSet(readToken->token,follows[temp->val.nt_val]);
-                            readToken = runLexerForParser(testcaseFile,10);
-                            error_flag = 1;
+                            readToken = runLexerForParser(testcaseFile,10, printError);
+                            syntacticError = 1;
                         }
                         else push(mainStack, temp);
                     }
@@ -306,12 +308,13 @@ ASTNODE parseInputSourceCode(char *testcaseFile, int** parseTable, int printSynt
             while(sync_flag == 0);
         }
         else{
-            printf("ERROR: Stack emptied before input consumed\n");
-            error_flag = 1;
+            if(printError) printf("ERROR: Stack emptied before input consumed\n");
+            syntacticError = 1;
         }
     }
     printf("\n");
-    ASTNODE temp = createAST(t1, reqLexeme);
+    ASTNODE temp;
+    temp = createAST(t1, reqLexeme);
     freeTree(t1);
     return temp;
 }
