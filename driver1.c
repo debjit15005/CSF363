@@ -108,6 +108,7 @@ int main(int argc, char*argv[]){
                 createParseTable();
                 int** parseTable = getParseTable();
                 ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+				printAST(asTree, 0);
                 initSymTable();
                 createSymTable(asTree);
                 printGlobalTable(gSymTable);
