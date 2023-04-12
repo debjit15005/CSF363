@@ -15,6 +15,6 @@ void initSymTable();
 int insertGlobalSym(GLOBALSYMTABLE htable, char* key, int hashed);
 SYMTABLE getfromGlobal(char *lexeme, GLOBALSYMTABLE htable);
 void printGlobalTable(GLOBALSYMTABLE htable);
-
+void printArrays(GLOBALSYMTABLE htable);
 
 #endif

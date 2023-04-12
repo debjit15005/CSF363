@@ -841,7 +841,7 @@ ASTNODE searchFor(ASTNODE asTree, NT key)
 
 void printGlobalTable(GLOBALSYMTABLE htable)
 {
-    printf("%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n","var","module","scope","type","isArray","isStatic","ArrayRange","width","offset","nesting");
+    printf("%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n","var","module","scope","type","isArray","isStatic","ArrayRange","width","offset","nesting level");
     for(int i = 0; i<MODULO; i++)
     {
         if(htable[i].valid == 1)
@@ -1174,5 +1174,32 @@ void doOtherModules(ASTNODE searchOtherMod)
             printf("\033[0;31mLINE [%d,%d] ERROR Output variables unchanged \033[0m \n", start, end);
         }
         searchOtherMod = searchFor(searchOtherMod, module);
+    }
+}
+
+void printArrays(GLOBALSYMTABLE htable){
+    printf("%-10s %-10s %-10s %-15s %-15s %-10s\n", "module", "scope", "var", "array type", "range", "element type"); 
+    
+    for(int i = 0; i < MODULO; i++)
+    {
+        if(htable[i].valid == 1)
+        {
+            SYMTABLE localTable = htable[i].firstChild; 
+            for(int j = 0; j < MODULO; j++){
+                if(localTable->entries[j].valid && localTable->entries[j].isArray){
+                    SymTableEntry var = localTable->entries[j];
+                    printf("%-10s ", localTable->moduleName);
+                    printf("%-3d - %-3d  ", var.scope[0], var.scope[1]);
+                    printf("%-10s", var.lexeme);
+                    if(var.isStatic) printf("%-15s", "static array");
+                    else printf("%-15s", "dynamic array");
+                    printf("[%-5s,%-5s]  ", var.r1, var.r2);
+                    if(var.type == 0) printf("%-10s ", "INT");
+                    else if(var.type == 1) printf("%-10s ", "REAL");
+                    else printf("%-10s ", "BOOLEAN"); 
+                    printf("\n");
+                }
+            }
+        }
     }
 }

@@ -44,7 +44,7 @@ int main(int argc, char*argv[]){
 	int option = 1;
     initializeLexerOnce();
 
-	while(option > 0){
+	if(option > 0){
 		printf("\n\n\n");
 		printf("Press 0 to exit.\n");
 		printf("Press 1 to invoke lexer only.\n");
@@ -101,7 +101,7 @@ int main(int argc, char*argv[]){
 
 				break;
 			}
-            case 5:{
+            case 5:{//done
 				buildGrammar();
 				automaticFirsts();
                 automaticFollows();
@@ -114,6 +114,33 @@ int main(int argc, char*argv[]){
 
 				break;
 			}
+            case 6:{//done
+				buildGrammar();
+				automaticFirsts();
+                automaticFollows();
+                createParseTable();
+                int** parseTable = getParseTable();
+                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                initSymTable();
+                createSymTable(asTree);
+                printGlobalTable(gSymTable);
+
+				break;
+			}
+            case 7:{//done
+				buildGrammar();
+				automaticFirsts();
+                automaticFollows();
+                createParseTable();
+                int** parseTable = getParseTable();
+                ASTNODE asTree = parseInputSourceCode("input.txt", parseTable, 0);
+                initSymTable();
+                createSymTable(asTree);
+                printArrays(gSymTable);
+
+				break;
+			}
+
 			case -1:{
 				clock_t start_time, end_time;
 				double total_CPU_time, total_CPU_time_in_seconds;
