@@ -127,7 +127,7 @@ int main(int argc, char*argv[]){
                 ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 initSymTable();
                 createSymTable(asTree);
-                printActivationRecord(gSymTable);
+                // printActivationRecord(gSymTable);
 
 				break;
 			}
@@ -140,7 +140,7 @@ int main(int argc, char*argv[]){
                 ASTNODE asTree = parseInputSourceCode(argv[1], parseTable, 0);
                 initSymTable();
                 createSymTable(asTree);
-                printArrays(gSymTable);
+                // printArrays(gSymTable);
 
 				break;
 			}
