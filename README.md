@@ -24,7 +24,7 @@ Done
 ## Semantic Analyser
 - semantic error handling
 
-
+---
 ### Data Structures used
 - linkedlist
 - stack
